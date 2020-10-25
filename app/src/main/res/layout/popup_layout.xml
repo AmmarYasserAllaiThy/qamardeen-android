@@ -1,29 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical"
-    >
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
 
-  <com.batoulapps.QamarDeen.ui.widgets.SelectorWidget
-      android:id="@+id/selector_widget"
-      android:layout_margin="@dimen/selector_margin"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      />
+    <com.batoulapps.QamarDeen.ui.widgets.SelectorWidget
+        android:id="@+id/selector_widget"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/selector_margin" />
 
-  <Button
-      android:id="@+id/done_button"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:visibility="gone"
-      android:text="@string/done"
-      />
+    <Button
+        android:id="@+id/done_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/done"
+        android:visibility="gone" />
 
-  <Button
-      android:id="@+id/cancel_button"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:text="@string/cancel"
-      />
+    <Button
+        android:id="@+id/cancel_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/cancel" />
 </LinearLayout>
