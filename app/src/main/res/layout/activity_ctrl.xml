@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".CtrlActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/header_height"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <GridLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <!-- Keys -->
+            <TextView
+                style="@style/Ctrl_Grid_View.TV_Key"
+                android:layout_row="0"
+                android:text="@string/fajr" />
+
+            <TextView
+                style="@style/Ctrl_Grid_View.TV_Key"
+                android:layout_row="1"
+                android:text="@string/dhuhr" />
+
+            <TextView
+                style="@style/Ctrl_Grid_View.TV_Key"
+                android:layout_row="2"
+                android:text="@string/asr" />
+
+            <TextView
+                style="@style/Ctrl_Grid_View.TV_Key"
+                android:layout_row="3"
+                android:text="@string/maghrib" />
+
+            <TextView
+                style="@style/Ctrl_Grid_View.TV_Key"
+                android:layout_row="4"
+                android:text="@string/isha" />
+
+
+            <!-- Values -->
+            <TextView
+                android:id="@+id/fajr_missed_tv"
+                style="@style/Ctrl_Grid_View.TV_Value"
+                android:layout_row="0" />
+
+            <TextView
+                android:id="@+id/dhuhr_missed_tv"
+                style="@style/Ctrl_Grid_View.TV_Value"
+                android:layout_row="1" />
+
+            <TextView
+                android:id="@+id/asr_missed_tv"
+                style="@style/Ctrl_Grid_View.TV_Value"
+                android:layout_row="2" />
+
+            <TextView
+                android:id="@+id/maghrib_missed_tv"
+                style="@style/Ctrl_Grid_View.TV_Value"
+                android:layout_row="3" />
+
+            <TextView
+                android:id="@+id/isha_missed_tv"
+                style="@style/Ctrl_Grid_View.TV_Value"
+                android:layout_row="4" />
+
+            <View
+                style="@style/Ctrl_Grid_View.TV_Value"
+                android:layout_height="2dp"
+                android:layout_row="5"
+                android:layout_column="1"
+                android:background="@color/main_color_dark" />
+
+            <TextView
+                android:id="@+id/sum_missed_tv"
+                style="@style/Ctrl_Grid_View.TV_Value"
+                android:layout_row="6" />
+
+
+            <!-- ETs -->
+            <EditText
+                android:id="@+id/fajr_prayed_et"
+                style="@style/Ctrl_Grid_View.ET"
+                android:layout_row="0" />
+
+            <EditText
+                android:id="@+id/dhuhr_prayed_et"
+                style="@style/Ctrl_Grid_View.ET"
+                android:layout_row="1" />
+
+            <EditText
+                android:id="@+id/asr_prayed_et"
+                style="@style/Ctrl_Grid_View.ET"
+                android:layout_row="2" />
+
+            <EditText
+                android:id="@+id/maghrib_prayed_et"
+                style="@style/Ctrl_Grid_View.ET"
+                android:layout_row="3" />
+
+            <EditText
+                android:id="@+id/isha_prayed_et"
+                style="@style/Ctrl_Grid_View.ET"
+                android:layout_row="4" />
+
+        </GridLayout>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/header_height"
+            android:onClick="save"
+            android:text="@string/save"
+            android:textSize="22sp" />
+
+    </LinearLayout>
+</ScrollView>
