@@ -36,21 +36,21 @@ public class QamarDeenActivity extends AppCompatActivity implements ActionBar.Ta
 
     private ViewPager mQamarPager;
     private PagerAdapter mPagerAdapter;
-    private int[] mTabs = new int[]{R.string.prayers_tab, R.string.quran_tab, R.string.sadaqah_tab, R.string.fasting_tab};
+    private int[] mTabs = new int[]{
+            R.string.prayers_tab,
+            R.string.quran_tab,
+            R.string.sadaqah_tab,
+            R.string.fasting_tab};
     private QamarDbAdapter mDatabaseAdapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
-        SharedPreferences prefs =
-                PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        Locale locale = Locale.getDefault();
 
-        Locale locale;
-        if (prefs.getBoolean(QamarConstants.PreferenceKeys.USE_ARABIC, false)) {
+        if (prefs.getBoolean(QamarConstants.PreferenceKeys.USE_ARABIC, false))
             locale = new Locale("ar");
-        } else {
-            locale = Locale.getDefault();
-        }
 
         Resources resources = getResources();
         Configuration config = resources.getConfiguration();
@@ -59,9 +59,7 @@ public class QamarDeenActivity extends AppCompatActivity implements ActionBar.Ta
 
         super.onCreate(savedInstanceState);
 
-        if (!BuildConfig.DEBUG) {
-            Fabric.with(this, new Crashlytics());
-        }
+        if (!BuildConfig.DEBUG) Fabric.with(this, new Crashlytics());
 
         setContentView(R.layout.main);
 
@@ -76,9 +74,8 @@ public class QamarDeenActivity extends AppCompatActivity implements ActionBar.Ta
 
         ActionBar actionbar = getSupportActionBar();
         actionbar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-        if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        if (config.orientation == Configuration.ORIENTATION_LANDSCAPE)
             actionbar.setDisplayShowTitleEnabled(false);
-        }
 
         for (int i = 0; i < mTabs.length; i++) {
             ActionBar.Tab tab = actionbar.newTab();
@@ -110,16 +107,15 @@ public class QamarDeenActivity extends AppCompatActivity implements ActionBar.Ta
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.settings) {
-            Intent intent = new Intent(this, QamarPreferencesActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(this, QamarPreferencesActivity.class));
             return true;
+
         } else if (item.getItemId() == R.id.graphs) {
-            Intent intent = new Intent(this, QamarGraphActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(this, QamarGraphActivity.class));
             return true;
+
         } else if (item.getItemId() == R.id.ctrl) {
-            Intent intent = new Intent(this, CtrlActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(this, CtrlActivity.class));
             return true;
         }
 
@@ -138,13 +134,9 @@ public class QamarDeenActivity extends AppCompatActivity implements ActionBar.Ta
             FragmentManager fm = getSupportFragmentManager();
             Fragment f = fm.findFragmentByTag(fragmentTag);
 
-            if (f != null && f instanceof QamarFragment) {
-                boolean dismissed = ((QamarFragment) f).dismissPopup();
-                if (dismissed) {
-                    return;
-                }
-            }
+            if (f instanceof QamarFragment) if (((QamarFragment) f).dismissPopup()) return;
         }
+
         super.onBackPressed();
     }
 
@@ -206,9 +198,9 @@ public class QamarDeenActivity extends AppCompatActivity implements ActionBar.Ta
         }
 
         /**
-         * this is a private method in FragmentPagerAdapter that allows getting the tag that it uses to
-         * store the fragment in (for use by getFragmentByTag).  in the future, this could change and
-         * cause us issues...
+         * this is a private method in FragmentPagerAdapter that allows getting the tag that used to
+         * store the fragment in (for use by getFragmentByTag).
+         * in the future, this could change and cause us issues...
          *
          * @param viewId the view id of the viewpager
          * @param index  the index of the fragment to get

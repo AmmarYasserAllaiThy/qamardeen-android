@@ -63,7 +63,7 @@ public class PrayerBoxesLayout extends LinearLayout {
 
     private void init(Context context) {
         mContext = context;
-        mImages = new ArrayList<ImageView>();
+        mImages = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             ImageView image = getImageView(QamarConstants.PRAYER_LIST[i]);
@@ -77,20 +77,17 @@ public class PrayerBoxesLayout extends LinearLayout {
     private ImageView getImageView(int tag) {
         ImageView image = new ImageView(mContext);
         image.setTag(tag);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0,
-                LayoutParams.MATCH_PARENT, 1);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT, 1);
         image.setLayoutParams(lp);
         image.setOnClickListener(mImageClickListener);
+
         return image;
     }
 
-    protected OnClickListener mImageClickListener = new OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            if (mSalahClickListener != null) {
-                Integer salah = (Integer) v.getTag();
-                mSalahClickListener.onSalahClicked(v, salah);
-            }
+    protected OnClickListener mImageClickListener = v -> {
+        if (mSalahClickListener != null) {
+            Integer salah = (Integer) v.getTag();
+            mSalahClickListener.onSalahClicked(v, salah);
         }
     };
 
@@ -98,7 +95,7 @@ public class PrayerBoxesLayout extends LinearLayout {
      * salah click listener
      */
     public interface SalahClickListener {
-        public void onSalahClicked(View view, final int salah);
+        void onSalahClicked(View view, final int salah);
     }
 
     /**
@@ -117,9 +114,7 @@ public class PrayerBoxesLayout extends LinearLayout {
      *              for each salah for that day.
      */
     public void setPrayerSquares(int[] items) {
-        for (int i = 0; i < items.length; i++) {
-            togglePrayerSquare(i, items[i]);
-        }
+        for (int i = 0; i < items.length; i++) togglePrayerSquare(i, items[i]);
     }
 
     /**
@@ -139,12 +134,10 @@ public class PrayerBoxesLayout extends LinearLayout {
      * @param type  the type to set that prayer to
      */
     private void togglePrayerSquare(int salah, int type) {
-        ImageView salahSquare = (ImageView) findViewWithTag(salah);
-        if (salahSquare != null) {
-            if (type < mSalahValues.length) {
-                salahSquare.setImageResource(mSalahValues[type]);
-            }
-        }
+        ImageView salahSquare = findViewWithTag(salah);
+
+        if (salahSquare != null && type < mSalahValues.length)
+            salahSquare.setImageResource(mSalahValues[type]);
     }
 
     /**
@@ -155,12 +148,7 @@ public class PrayerBoxesLayout extends LinearLayout {
      *               correct... regardless, i point the reader to 16:97
      */
     public void setGenderIsMale(boolean isMale) {
-        mIsMale = isMale;
-        if (mIsMale) {
-            mSalahValues = SALAH_IMAGE_VALUES_M;
-        } else {
-            mSalahValues = SALAH_IMAGE_VALUES_F;
-        }
+        mSalahValues = (mIsMale = isMale) ? SALAH_IMAGE_VALUES_M : SALAH_IMAGE_VALUES_F;
     }
 
     /**
@@ -182,6 +170,7 @@ public class PrayerBoxesLayout extends LinearLayout {
 
             // update patterns
             setBackgrounds();
+
         } else if (!extendedMode && mIsExtendedMode) {
             // remove qiyyam
             ImageView tahajjud = mImages.remove(Prayers.QIYYAM);
@@ -204,14 +193,14 @@ public class PrayerBoxesLayout extends LinearLayout {
 
     private void setBackgrounds() {
         int i = 0;
+
         for (ImageView image : mImages) {
             int resource = R.color.transparent;
-            if (i % 2 != 0) {
-                resource = R.color.shaded_column_color;
-            }
+
+            if (i % 2 != 0) resource = R.color.shaded_column_color;
+
             image.setBackgroundResource(resource);
             i++;
         }
     }
-
 }

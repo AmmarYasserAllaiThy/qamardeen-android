@@ -68,24 +68,25 @@ public class GraphWidget extends RelativeLayout {
 
     public void renderGraph(Map<Long, Integer> scores) {
         removeAllViews();
+
         String[] titles = new String[]{""};
         List<Date[]> dates = new ArrayList<>();
         List<double[]> values = new ArrayList<>();
-
         int maxScore = 100;
         Set<Long> keys = scores.keySet();
         int i = keys.size() - 1;
-        if (0 > i) {
-            return;
-        }
+
+        if (0 > i) return;
+
         Date[] dateValues = new Date[keys.size()];
         double[] scoreValues = new double[keys.size()];
+
         for (Long when : keys) {
             dateValues[i] = new Date(when);
             int score = scores.get(when);
-            if (score > maxScore) {
-                maxScore = score;
-            }
+
+            if (score > maxScore) maxScore = score;
+
             scoreValues[i--] = score;
 
             // store the last minimum date for later use by QamarGraphActivity
@@ -98,16 +99,21 @@ public class GraphWidget extends RelativeLayout {
         int[] colors = new int[]{Color.BLUE};
         PointStyle[] styles = new PointStyle[]{PointStyle.POINT};
         XYMultipleSeriesRenderer renderer = buildRenderer(colors, styles);
-        setChartSettings(renderer, dateValues[0].getTime(),
+
+        setChartSettings(renderer,
+                dateValues[0].getTime(),
                 dateValues[dateValues.length - 1].getTime(),
-                0, maxScore + 100, Color.DKGRAY);
+                0,
+                maxScore + 100,
+                Color.DKGRAY);
         renderer.setYLabels(10);
         renderer.setPanEnabled(false, false);
         renderer.setZoomEnabled(false, false);
 
         View view = ChartFactory.getTimeChartView(mContext,
                 buildDateDataset(titles, dates, values),
-                renderer, "MMM yyyy");
+                renderer,
+                "MMM yyyy");
 
         addView(view, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
     }
@@ -120,18 +126,21 @@ public class GraphWidget extends RelativeLayout {
      * @param yValues the values for the Y axis
      * @return the XY multiple time dataset
      */
-    protected XYMultipleSeriesDataset buildDateDataset(String[] titles, List<Date[]> xValues,
+    protected XYMultipleSeriesDataset buildDateDataset(String[] titles,
+                                                       List<Date[]> xValues,
                                                        List<double[]> yValues) {
+
         XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
         int length = titles.length;
+
         for (int i = 0; i < length; i++) {
             TimeSeries series = new TimeSeries(titles[i]);
             Date[] xV = xValues.get(i);
             double[] yV = yValues.get(i);
             int seriesLength = xV.length;
-            for (int k = 0; k < seriesLength; k++) {
-                series.add(xV[k], yV[k]);
-            }
+
+            for (int k = 0; k < seriesLength; k++) series.add(xV[k], yV[k]);
+
             dataset.addSeries(series);
         }
         return dataset;
@@ -158,6 +167,7 @@ public class GraphWidget extends RelativeLayout {
         renderer.setPointSize(5f);
         renderer.setMargins(new int[]{20, 30, 15, 20});
         int length = colors.length;
+
         for (int i = 0; i < length; i++) {
             XYSeriesRenderer r = new XYSeriesRenderer();
             r.setColor(colors[i]);
@@ -177,8 +187,9 @@ public class GraphWidget extends RelativeLayout {
      * @param axesColor the axes color
      */
     protected void setChartSettings(XYMultipleSeriesRenderer renderer,
-                                    double xMin, double xMax, double yMin,
-                                    double yMax, int axesColor) {
+                                    double xMin, double xMax,
+                                    double yMin, double yMax, int axesColor) {
+
         renderer.setXAxisMin(xMin);
         renderer.setXAxisMax(xMax);
         renderer.setYAxisMin(yMin);

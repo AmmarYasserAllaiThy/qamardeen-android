@@ -11,8 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -37,8 +35,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class QuranFragment extends QamarFragment
-        implements OnQuranSelectionListener {
+public class QuranFragment extends QamarFragment implements OnQuranSelectionListener {
 
     public static final String EXTRA_DATE = "date";
     public static final String EXTRA_READ = "read";
@@ -60,103 +57,89 @@ public class QuranFragment extends QamarFragment
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
-        mListView.setOnItemClickListener(new OnItemClickListener() {
 
-            @Override
-            public void onItemClick(AdapterView<?> parent, final View view,
-                                    final int position, long id) {
-                mListAdapter.scrollListToPosition(
-                        mListView, position, mHeaderHeight);
-                if (!mIsStandardReadingMode) {
-                    // launch the selector activity
-                    Intent intent = new Intent(getActivity(),
-                            SuraSelectorActivity.class);
-                    intent.putExtra(EXTRA_DATE,
-                            ((Date) mListAdapter.getItem(position)).getTime());
-                    intent.putExtra(EXTRA_READ, ((QuranListAdapter) mListAdapter)
-                            .getExtraReadSuras(position));
+        mListView.setOnItemClickListener((parent, view1, position, id) -> {
+            mListAdapter.scrollListToPosition(mListView, position, mHeaderHeight);
 
-                    // force refresh in onResume
-                    mReadData = false;
-                    // clear data to avoid conflicts when we return
-                    ((QuranListAdapter) mListAdapter).clearData();
+            if (!mIsStandardReadingMode) {
+                // launch the selector activity
+                Intent intent = new Intent(getActivity(), SuraSelectorActivity.class);
+                intent.putExtra(EXTRA_DATE, ((Date) mListAdapter.getItem(position)).getTime());
+                intent.putExtra(EXTRA_READ, ((QuranListAdapter) mListAdapter).getExtraReadSuras(position));
 
-                    startActivity(intent);
-                    return;
-                }
+                // force refresh in onResume
+                mReadData = false;
+                // clear data to avoid conflicts when we return
+                ((QuranListAdapter) mListAdapter).clearData();
 
-                view.postDelayed(
-                        new Runnable() {
-                            public void run() {
-                                popupQuranBox(view, position);
-                            }
-                        }, 50);
+                startActivity(intent);
+                return;
             }
+
+            view1.postDelayed(() -> popupQuranBox(view1, position), 50);
         });
 
-        mDailyButton = (Button) view.findViewById(R.id.daily_button);
-        mExtraButton = (Button) view.findViewById(R.id.extra_button);
+        mDailyButton = view.findViewById(R.id.daily_button);
+        mExtraButton = view.findViewById(R.id.extra_button);
         mDailyButton.setOnClickListener(mOnButtonClickListener);
         mExtraButton.setOnClickListener(mOnButtonClickListener);
         mDailyButton.setEnabled(false);
         mExtraButton.setEnabled(true);
 
-        mLeftPadding = getResources()
-                .getDimensionPixelSize(R.dimen.extra_reading_padding);
+        mLeftPadding = getResources().getDimensionPixelSize(R.dimen.extra_reading_padding);
         return view;
     }
 
-    OnClickListener mOnButtonClickListener = new OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            if (v.getId() == R.id.daily_button) {
-                if (!mIsStandardReadingMode) {
-                    mDailyButton.setEnabled(false);
-                    mExtraButton.setEnabled(true);
+    OnClickListener mOnButtonClickListener = v -> {
+        if (v.getId() == R.id.daily_button) {
+            if (!mIsStandardReadingMode) {
+                mDailyButton.setEnabled(false);
+                mExtraButton.setEnabled(true);
 
-                    View hdr = mListView.getPinnedHeaderView();
-                    TextView hdrText =
-                            (TextView) hdr.findViewById(R.id.quran_hdr_daily_readings);
-                    hdrText.setVisibility(View.VISIBLE);
-                    hdrText = (TextView) hdr.findViewById(R.id.quran_hdr_ayah_count);
-                    hdrText.setVisibility(View.VISIBLE);
-                    hdrText = (TextView) hdr.findViewById(R.id.quran_hdr_extra_readings);
-                    hdrText.setVisibility(View.GONE);
-                    hdr.invalidate();
+                View hdr = mListView.getPinnedHeaderView();
 
-                    mIsStandardReadingMode = true;
-                    mListAdapter.notifyDataSetChanged();
-                }
-            } else if (v.getId() == R.id.extra_button) {
-                if (mIsStandardReadingMode) {
-                    mDailyButton.setEnabled(true);
-                    mExtraButton.setEnabled(false);
+                TextView hdrText = hdr.findViewById(R.id.quran_hdr_daily_readings);
+                hdrText.setVisibility(View.VISIBLE);
 
-                    View hdr = mListView.getPinnedHeaderView();
-                    TextView hdrText =
-                            (TextView) hdr.findViewById(R.id.quran_hdr_daily_readings);
-                    hdrText.setVisibility(View.GONE);
-                    hdrText = (TextView) hdr.findViewById(R.id.quran_hdr_ayah_count);
-                    hdrText.setVisibility(View.GONE);
-                    hdrText = (TextView) hdr.findViewById(R.id.quran_hdr_extra_readings);
-                    hdrText.setVisibility(View.VISIBLE);
-                    hdr.invalidate();
+                hdrText = hdr.findViewById(R.id.quran_hdr_ayah_count);
+                hdrText.setVisibility(View.VISIBLE);
 
-                    mIsStandardReadingMode = false;
-                    mListAdapter.notifyDataSetChanged();
-                }
+                hdrText = hdr.findViewById(R.id.quran_hdr_extra_readings);
+                hdrText.setVisibility(View.GONE);
+
+                hdr.invalidate();
+
+                mIsStandardReadingMode = true;
+                mListAdapter.notifyDataSetChanged();
             }
-        }
+        } else if (v.getId() == R.id.extra_button)
+            if (mIsStandardReadingMode) {
+                mDailyButton.setEnabled(true);
+                mExtraButton.setEnabled(false);
+
+                View hdr = mListView.getPinnedHeaderView();
+
+                TextView hdrText = hdr.findViewById(R.id.quran_hdr_daily_readings);
+                hdrText.setVisibility(View.GONE);
+
+                hdrText = hdr.findViewById(R.id.quran_hdr_ayah_count);
+                hdrText.setVisibility(View.GONE);
+
+                hdrText = hdr.findViewById(R.id.quran_hdr_extra_readings);
+                hdrText.setVisibility(View.VISIBLE);
+
+                hdr.invalidate();
+
+                mIsStandardReadingMode = false;
+                mListAdapter.notifyDataSetChanged();
+            }
     };
 
     @Override
     public void onPause() {
-        if (mQuranSelectorPopupHelper != null) {
-            mQuranSelectorPopupHelper.dismissPopup();
-        }
+        if (mQuranSelectorPopupHelper != null) mQuranSelectorPopupHelper.dismissPopup();
         super.onPause();
     }
 
@@ -167,8 +150,7 @@ public class QuranFragment extends QamarFragment
      */
     @Override
     public boolean dismissPopup() {
-        if (mQuranSelectorPopupHelper != null &&
-                mQuranSelectorPopupHelper.isShowing()) {
+        if (mQuranSelectorPopupHelper != null && mQuranSelectorPopupHelper.isShowing()) {
             mQuranSelectorPopupHelper.dismissPopup();
             return true;
         }
@@ -181,40 +163,31 @@ public class QuranFragment extends QamarFragment
     }
 
     private void popupQuranBox(View anchorView, int currentRow) {
-        int selectedSura = 1;
-        int selectedAyah = 0;
-
-        QuranData startData = null;
+        int selectedSura;
+        int selectedAyah;
         Date date = (Date) mListAdapter.getItem(currentRow);
-        startData = ((QuranListAdapter) mListAdapter).mDayData
-                .get(date.getTime());
+        QuranData startData = ((QuranListAdapter) mListAdapter).mDayData.get(date.getTime());
 
-        if (startData == null) {
-            startData = ((QuranListAdapter) mListAdapter)
-                    .getEarlierEntry(currentRow);
-        }
+        if (startData == null)
+            startData = ((QuranListAdapter) mListAdapter).getEarlierEntry(currentRow);
 
         selectedSura = startData.getEndSura();
         selectedAyah = startData.getEndAyah();
 
-        mQuranSelectorPopupHelper.showPopup(this, anchorView, currentRow,
-                selectedSura, selectedAyah);
+        mQuranSelectorPopupHelper.showPopup(this, anchorView, currentRow, selectedSura, selectedAyah);
     }
 
     @Override
     public void onSuraAyahSelected(int row, int sura, int ayah) {
-        if (mWritingTask != null) {
-            mWritingTask.cancel(true);
-        }
+        if (mWritingTask != null) mWritingTask.cancel(true);
 
         // get or initialize the current quran entry
         Date currentDate = (Date) mListAdapter.getItem(row);
-        QuranData currentEntry = ((QuranListAdapter) mListAdapter)
-                .mDayData.get(currentDate.getTime());
+        QuranData currentEntry = ((QuranListAdapter) mListAdapter).mDayData.get(currentDate.getTime());
+
         if (currentEntry == null) {
             // this is a new entry, so use an earlier entry as a template
-            QuranData earlierEntry =
-                    ((QuranListAdapter) mListAdapter).getEarlierEntry(row);
+            QuranData earlierEntry = ((QuranListAdapter) mListAdapter).getEarlierEntry(row);
             currentEntry = new QuranData();
 
             // our starting point is the previous entry's ending point
@@ -233,29 +206,30 @@ public class QuranFragment extends QamarFragment
 
         Long affectedTimestamp = null;
         QuranData affectedRowData = null;
-        Integer affectedRowNumber =
-                ((QuranListAdapter) mListAdapter).getLaterEntryRow(row);
+        Integer affectedRowNumber = ((QuranListAdapter) mListAdapter).getLaterEntryRow(row);
+
         if (affectedRowNumber != null) {
             // get details about the affected row
             Date affectedDate = (Date) mListAdapter.getItem(affectedRowNumber);
             affectedTimestamp = QamarTime.getGMTTimeFromLocalDate(affectedDate);
-            affectedRowData = ((QuranListAdapter) mListAdapter)
-                    .mDayData.get(affectedDate.getTime());
+            affectedRowData = ((QuranListAdapter) mListAdapter).mDayData.get(affectedDate.getTime());
             affectedRowData.setStartAyah(ayah);
             affectedRowData.setStartSura(sura);
         }
 
         mWritingTask = new WriteQuranDataTask(
-                row, currentTimestamp, currentEntry,
-                affectedRowNumber, affectedTimestamp, affectedRowData);
+                row,
+                currentTimestamp,
+                currentEntry,
+                affectedRowNumber,
+                affectedTimestamp,
+                affectedRowData);
         mWritingTask.execute();
     }
 
     @Override
     public void onNoneSelected(int row) {
-        if (mWritingTask != null) {
-            mWritingTask.cancel(true);
-        }
+        if (mWritingTask != null) mWritingTask.cancel(true);
 
         Date currentDate = (Date) mListAdapter.getItem(row);
         long currentTimestamp = QamarTime.getGMTTimeFromLocalDate(currentDate);
@@ -265,39 +239,41 @@ public class QuranFragment extends QamarFragment
 
         Long affectedTimestamp = null;
         QuranData affectedRowData = null;
-        Integer affectedRowNumber =
-                ((QuranListAdapter) mListAdapter).getLaterEntryRow(row);
+        Integer affectedRowNumber = ((QuranListAdapter) mListAdapter).getLaterEntryRow(row);
+
         if (affectedRowNumber != null) {
             // get details about the affected row
             Date affectedDate = (Date) mListAdapter.getItem(affectedRowNumber);
             affectedTimestamp = QamarTime.getGMTTimeFromLocalDate(affectedDate);
-            affectedRowData = ((QuranListAdapter) mListAdapter)
-                    .mDayData.get(affectedDate.getTime());
+            affectedRowData = ((QuranListAdapter) mListAdapter).mDayData.get(affectedDate.getTime());
 
             // update the start sura/ayah to point to the earlier datapoint
-            QuranData earlierEntry =
-                    ((QuranListAdapter) mListAdapter).getEarlierEntry(row);
+            QuranData earlierEntry = ((QuranListAdapter) mListAdapter).getEarlierEntry(row);
             affectedRowData.setStartAyah(earlierEntry.getEndAyah());
             affectedRowData.setStartSura(earlierEntry.getEndSura());
         }
 
-        mWritingTask = new WriteQuranDataTask(row, currentTimestamp, null,
-                affectedRowNumber, affectedTimestamp, affectedRowData);
+        mWritingTask = new WriteQuranDataTask(
+                row,
+                currentTimestamp,
+                null,
+                affectedRowNumber,
+                affectedTimestamp,
+                affectedRowData);
         mWritingTask.execute();
     }
 
     private class WriteQuranDataTask extends AsyncTask<Object, Void, Boolean> {
-        private int mSelectedRow = -1;
-        private long mChangedTimestamp = -1;
-        private QuranData mChangedData = null;
-        private Integer mAffectedRowNumber = null;
-        private Long mAffectedTimestamp = null;
-        private QuranData mAffectedData = null;
+        private int mSelectedRow;
+        private long mChangedTimestamp;
+        private QuranData mChangedData;
+        private Integer mAffectedRowNumber;
+        private Long mAffectedTimestamp;
+        private QuranData mAffectedData;
 
         public WriteQuranDataTask(int changedRow, long changedTimestamp,
                                   QuranData changedData, Integer affectedRowNumber,
-                                  Long affectedTimestamp,
-                                  QuranData affectedData) {
+                                  Long affectedTimestamp, QuranData affectedData) {
             mSelectedRow = changedRow;
             mChangedTimestamp = changedTimestamp;
             mChangedData = changedData;
@@ -308,17 +284,17 @@ public class QuranFragment extends QamarFragment
 
         @Override
         protected Boolean doInBackground(Object... params) {
-            QamarDeenActivity activity =
-                    (QamarDeenActivity) QuranFragment.this.getActivity();
+            QamarDeenActivity activity = (QamarDeenActivity) QuranFragment.this.getActivity();
             QamarDbAdapter adapter = activity.getDatabaseAdapter();
 
             Long affectedTime = null;
-            if (mAffectedTimestamp != null) {
-                affectedTime = mAffectedTimestamp / 1000;
-            }
+            if (mAffectedTimestamp != null) affectedTime = mAffectedTimestamp / 1000;
 
-            return adapter.writeQuranEntry(mChangedTimestamp / 1000,
-                    mChangedData, affectedTime, mAffectedData);
+            return adapter.writeQuranEntry(
+                    mChangedTimestamp / 1000,
+                    mChangedData,
+                    affectedTime,
+                    mAffectedData);
         }
 
         @Override
@@ -330,15 +306,13 @@ public class QuranFragment extends QamarFragment
                 long localTimestamp = QamarTime.getLocalTimeFromGMT(gmtCal);
 
                 // update the list adapter with the data
-                ((QuranListAdapter) mListAdapter)
-                        .updateQuranDataRow(localTimestamp, mChangedData);
+                ((QuranListAdapter) mListAdapter).updateQuranDataRow(localTimestamp, mChangedData);
+
                 if (mAffectedTimestamp != null) {
                     gmtCal = QamarTime.getGMTCalendar();
                     gmtCal.setTimeInMillis(mAffectedTimestamp);
                     long affectedTimestamp = QamarTime.getLocalTimeFromGMT(gmtCal);
-
-                    ((QuranListAdapter) mListAdapter)
-                            .updateQuranDataRow(affectedTimestamp, mAffectedData);
+                    ((QuranListAdapter) mListAdapter).updateQuranDataRow(affectedTimestamp, mAffectedData);
                 }
 
                 boolean refreshed = false;
@@ -346,8 +320,10 @@ public class QuranFragment extends QamarFragment
                 // attempt to refresh just this one list item
                 int start = mListView.getFirstVisiblePosition();
                 int end = mListView.getLastVisiblePosition();
+
                 if (mSelectedRow >= start && mSelectedRow <= end) {
                     View view = mListView.getChildAt(mSelectedRow - start);
+
                     if (view != null) {
                         mListAdapter.getView(mSelectedRow, view, mListView);
                         refreshed = true;
@@ -355,18 +331,13 @@ public class QuranFragment extends QamarFragment
                 }
 
                 // attempt to refresh the affected element if it exists
-                if (mAffectedRowNumber != null && mAffectedRowNumber >= start &&
-                        mAffectedRowNumber <= end) {
+                if (mAffectedRowNumber != null && mAffectedRowNumber >= start && mAffectedRowNumber <= end) {
                     View view = mListView.getChildAt(mAffectedRowNumber - start);
-                    if (view != null) {
-                        mListAdapter.getView(mAffectedRowNumber, view, mListView);
-                    }
+                    if (view != null) mListAdapter.getView(mAffectedRowNumber, view, mListView);
                 }
 
-                if (!refreshed) {
-                    // if we can't, refresh everything
-                    mListAdapter.notifyDataSetChanged();
-                }
+                // if we can't, refresh everything
+                if (!refreshed) mListAdapter.notifyDataSetChanged();
             }
             mWritingTask = null;
         }
@@ -395,10 +366,10 @@ public class QuranFragment extends QamarFragment
             long maxDate = params[0];
             long minDate = params[1];
 
-            QamarDeenActivity activity =
-                    (QamarDeenActivity) QuranFragment.this.getActivity();
+            QamarDeenActivity activity = (QamarDeenActivity) QuranFragment.this.getActivity();
             QamarDbAdapter adapter = activity.getDatabaseAdapter();
             Cursor earlierCursor = adapter.getEarlierQuranEntry(minDate / 1000);
+
             if (earlierCursor != null) {
                 if (earlierCursor.moveToFirst()) {
                     QuranData d = new QuranData();
@@ -406,11 +377,11 @@ public class QuranFragment extends QamarFragment
                     d.setEndSura(earlierCursor.getInt(3));
                     d.setStartAyah(earlierCursor.getInt(4));
                     d.setStartSura(earlierCursor.getInt(5));
+
                     mEarlierData = d;
                 }
                 earlierCursor.close();
             }
-
             return adapter.getQuranEntries(maxDate / 1000, minDate / 1000);
         }
 
@@ -418,9 +389,9 @@ public class QuranFragment extends QamarFragment
         protected void onPostExecute(Cursor cursor) {
             if (cursor != null) {
                 if (cursor.moveToFirst()) {
-                    Map<Long, QuranData> dayData = new HashMap<Long, QuranData>();
-                    Map<Long, List<Integer>> extraData =
-                            new HashMap<Long, List<Integer>>();
+                    Map<Long, QuranData> dayData = new HashMap<>();
+                    Map<Long, List<Integer>> extraData = new HashMap<>();
+
                     do {
                         long timestamp = cursor.getLong(1) * 1000;
                         int endAyah = cursor.getInt(2);
@@ -436,45 +407,40 @@ public class QuranFragment extends QamarFragment
 
                         if (isExtraReading == 1) {
                             List<Integer> suras = extraData.get(localTimestamp);
-                            if (suras == null) {
-                                suras = new ArrayList<Integer>();
-                            }
+                            if (suras == null) suras = new ArrayList<>();
+
                             suras.add(endSura);
                             extraData.put(localTimestamp, suras);
+
                         } else {
-                            QuranData qd = new QuranData(
-                                    startAyah, startSura, endAyah, endSura);
+                            QuranData qd = new QuranData(startAyah, startSura, endAyah, endSura);
                             dayData.put(localTimestamp, qd);
                         }
                     }
                     while (cursor.moveToNext());
 
-                    if (!dayData.isEmpty()) {
-                        // set the data in the adapter
-                        ((QuranListAdapter) mListAdapter).addDayData(dayData);
-                    }
+                    // set the data in the adapter
+                    if (!dayData.isEmpty()) ((QuranListAdapter) mListAdapter).addDayData(dayData);
 
-                    if (!extraData.isEmpty()) {
+                    if (!extraData.isEmpty())
                         ((QuranListAdapter) mListAdapter).addExtraData(extraData);
-                    }
                 }
 
                 mListAdapter.notifyDataSetChanged();
                 ((QuranListAdapter) mListAdapter).setEarlierEntryData(mEarlierData);
                 cursor.close();
                 mReadData = true;
-            } else {
-                mReadData = false;
-            }
+
+            } else mReadData = false;
+
             mLoadingTask = null;
         }
     }
 
     private class QuranListAdapter extends QamarListAdapter {
-        private Map<Long, QuranData> mDayData = new HashMap<Long, QuranData>();
-        private Map<Long, List<Integer>> mExtraData =
-                new HashMap<Long, List<Integer>>();
-        private String[] mSuras = null;
+        private Map<Long, QuranData> mDayData = new HashMap<>();
+        private Map<Long, List<Integer>> mExtraData = new HashMap<>();
+        private String[] mSuras;
         private NumberFormat mAyahFormatter;
 
         // this is used to store the first entry not on the screen
@@ -488,11 +454,8 @@ public class QuranFragment extends QamarFragment
         @Override
         protected boolean updateLanguage() {
             boolean isArabic = super.updateLanguage();
-            if (isArabic) {
-                mAyahFormatter = NumberFormat.getIntegerInstance(new Locale("ar"));
-            } else {
-                mAyahFormatter = NumberFormat.getIntegerInstance();
-            }
+            if (isArabic) mAyahFormatter = NumberFormat.getIntegerInstance(new Locale("ar"));
+            else mAyahFormatter = NumberFormat.getIntegerInstance();
             return isArabic;
         }
 
@@ -527,14 +490,13 @@ public class QuranFragment extends QamarFragment
             StringBuilder result = new StringBuilder();
             long date = ((Date) getItem(position)).getTime();
             List<Integer> data = mExtraData.get(date);
+
             if (data != null) {
                 boolean firstItem = true;
+
                 for (Integer item : data) {
-                    if (firstItem) {
-                        firstItem = false;
-                    } else {
-                        result.append(",");
-                    }
+                    if (firstItem) firstItem = false;
+                    else result.append(",");
                     result.append(item);
                 }
             }
@@ -551,17 +513,14 @@ public class QuranFragment extends QamarFragment
         public QuranData getEarlierEntry(int row) {
             QuranData result = null;
             Integer earlierRow = getEarlierEntryRow(row);
+
             if (earlierRow != null) {
                 Date d = (Date) getItem(earlierRow);
                 result = mDayData.get(d.getTime());
             }
 
-            if (result == null) {
-                result = mEarlierEntryData;
-            }
-            if (result == null) {
-                result = new QuranData();
-            }
+            if (result == null) result = mEarlierEntryData;
+            if (result == null) result = new QuranData();
             return result;
         }
 
@@ -573,8 +532,10 @@ public class QuranFragment extends QamarFragment
          */
         public Integer getEarlierEntryRow(int row) {
             Integer result = null;
+
             for (int i = row + 1; i < getCount(); i++) {
                 Date d = (Date) getItem(i);
+
                 if (mDayData.containsKey(d.getTime())) {
                     result = i;
                     break;
@@ -591,8 +552,10 @@ public class QuranFragment extends QamarFragment
          */
         public Integer getLaterEntryRow(int row) {
             Integer result = null;
+
             for (int i = row - 1; i >= 0; i--) {
                 Date d = (Date) getItem(i);
+
                 if (mDayData.containsKey(d.getTime())) {
                     result = i;
                     break;
@@ -610,23 +573,19 @@ public class QuranFragment extends QamarFragment
                 ViewHolder h = new ViewHolder();
                 convertView = mInflater.inflate(R.layout.quran_layout, null);
                 populateDayInfoInHolder(h, convertView, R.id.quran_hdr);
-                h.dailyReadings =
-                        (TextView) convertView.findViewById(R.id.daily_readings);
-                h.ayahCount =
-                        (TextView) convertView.findViewById(R.id.ayah_count);
-                h.jumpImage =
-                        (ImageView) convertView.findViewById(R.id.jump_image);
-                h.extraReadings =
-                        (TextView) convertView.findViewById(R.id.extra_readings);
+
+                h.dailyReadings = convertView.findViewById(R.id.daily_readings);
+                h.ayahCount = convertView.findViewById(R.id.ayah_count);
+                h.jumpImage = convertView.findViewById(R.id.jump_image);
+                h.extraReadings = convertView.findViewById(R.id.extra_readings);
                 h.ayahArea = convertView.findViewById(R.id.ayah_area);
-                h.ayahNumber = (TextView) h.ayahArea.findViewById(R.id.ayah_number);
-                h.ayahImage = (ImageView) h.ayahArea.findViewById(R.id.ayah_image);
+                h.ayahNumber = h.ayahArea.findViewById(R.id.ayah_number);
+                h.ayahImage = h.ayahArea.findViewById(R.id.ayah_image);
 
                 holder = h;
                 convertView.setTag(holder);
-            } else {
-                holder = (ViewHolder) convertView.getTag();
-            }
+
+            } else holder = (ViewHolder) convertView.getTag();
 
             // initialize generic row stuff (date, header, etc)
             initializeRow(holder, date, position);
@@ -642,32 +601,30 @@ public class QuranFragment extends QamarFragment
                 holder.ayahArea.setVisibility(View.VISIBLE);
 
                 QuranData data = mDayData.get(date.getTime());
+
                 if (data != null) {
                     // set the sura name and ayah count
                     holder.dailyReadings.setText(mSuras[data.getEndSura() - 1]);
                     int readAyahs = data.getAyahCount();
                     holder.ayahCount.setText(mAyahFormatter.format(readAyahs));
                     holder.ayahImage.setImageResource(R.drawable.quran_ayah);
-                    holder.ayahNumber.setText(
-                            mAyahFormatter.format(data.getEndAyah()));
+                    holder.ayahNumber.setText(mAyahFormatter.format(data.getEndAyah()));
 
                     final QuranData d = data;
-                    holder.jumpImage.setOnClickListener(new OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            Intent i = new Intent(Intent.ACTION_VIEW);
-                            Uri uri = Uri.parse("quran://" + d.getEndSura() + "/" + d.getEndAyah());
-                            i.setData(uri);
 
-                            PackageManager pm = getActivity().getPackageManager();
-                            if (pm.queryIntentActivities(i, 0).size() == 0) {
-                                uri = Uri.parse("http://quran.com/" +
-                                        d.getEndSura() + "/" + d.getEndAyah());
-                                i.setData(uri);
-                            }
-                            startActivity(i);
+                    holder.jumpImage.setOnClickListener(view -> {
+                        Intent i = new Intent(Intent.ACTION_VIEW);
+                        Uri uri = Uri.parse("quran://" + d.getEndSura() + "/" + d.getEndAyah());
+                        i.setData(uri);
+
+                        PackageManager pm = getActivity().getPackageManager();
+                        if (pm.queryIntentActivities(i, 0).size() == 0) {
+                            uri = Uri.parse("http://quran.com/" + d.getEndSura() + "/" + d.getEndAyah());
+                            i.setData(uri);
                         }
+                        startActivity(i);
                     });
+
                 } else {
                     // nothing is in this row, so just hide stuff
                     holder.dailyReadings.setText("");
@@ -685,38 +642,36 @@ public class QuranFragment extends QamarFragment
                 holder.jumpImage.setVisibility(View.GONE);
 
                 List<Integer> suras = mExtraData.get(date.getTime());
+
                 if (suras != null) {
                     boolean first = true;
                     StringBuilder suraStringBuilder = new StringBuilder();
+
                     for (Integer sura : suras) {
-                        if (!first) {
-                            suraStringBuilder.append(", ");
-                        }
+                        if (!first) suraStringBuilder.append(", ");
+
                         suraStringBuilder.append(mSuras[sura - 1]);
                         first = false;
                     }
+
                     String suraString = suraStringBuilder.toString();
                     holder.extraReadings.setText(suraString);
-                    holder.extraReadings.setCompoundDrawablesWithIntrinsicBounds(
-                            0, 0, 0, 0);
+                    holder.extraReadings.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
                     holder.extraReadings.setPadding(mLeftPadding, 0, 0, 0);
+
                 } else {
                     holder.extraReadings.setText("");
                     holder.extraReadings.setPadding(0, 0, 0, 0);
-                    holder.extraReadings.setCompoundDrawablesWithIntrinsicBounds(
-                            R.drawable.prayer_notset, 0, 0, 0);
+                    holder.extraReadings.setCompoundDrawablesWithIntrinsicBounds(R.drawable.prayer_notset, 0, 0, 0);
                 }
             }
-
             return convertView;
         }
 
         @Override
         public void configurePinnedHeader(View v, int position, int alpha) {
             super.configurePinnedHeader(v, position, alpha);
-            if (alpha == 255) {
-                v.setBackgroundResource(R.color.pinned_hdr_background);
-            }
+            if (alpha == 255) v.setBackgroundResource(R.color.pinned_hdr_background);
         }
 
         class ViewHolder extends QamarViewHolder {

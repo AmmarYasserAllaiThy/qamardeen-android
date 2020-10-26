@@ -15,9 +15,12 @@ public class SadaqahWidget extends LinearLayout {
     private Context mContext = null;
 
     public static int[] SADAQAH_SELECTOR_IMAGES = new int[]{
-            R.drawable.sadaqah_icon_money, R.drawable.sadaqah_icon_effort,
-            R.drawable.sadaqah_icon_food, R.drawable.sadaqah_icon_clothes,
-            R.drawable.sadaqah_icon_smile, R.drawable.sadaqah_icon_other
+            R.drawable.sadaqah_icon_money,
+            R.drawable.sadaqah_icon_effort,
+            R.drawable.sadaqah_icon_food,
+            R.drawable.sadaqah_icon_clothes,
+            R.drawable.sadaqah_icon_smile,
+            R.drawable.sadaqah_icon_other
     };
 
     public SadaqahWidget(Context context) {
@@ -58,14 +61,12 @@ public class SadaqahWidget extends LinearLayout {
      */
     public void setSadaqat(List<Integer> sadaqat) {
         removeAllViews();
+
         if (sadaqat == null || sadaqat.size() == 0) {
             addPlaceHolderView();
             return;
         }
 
-        for (Integer sadaqah : sadaqat) {
-            addSadaqahView(sadaqah);
-        }
+        for (Integer sadaqah : sadaqat) addSadaqahView(sadaqah);
     }
-
 }

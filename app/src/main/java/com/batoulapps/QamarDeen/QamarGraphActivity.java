@@ -30,8 +30,7 @@ import java.util.Calendar;
 import java.util.Locale;
 
 public class QamarGraphActivity extends AppCompatActivity
-        implements ActionBar.TabListener,
-        TimeSelectorWidget.TimeSelectedListener {
+        implements ActionBar.TabListener, TimeSelectorWidget.TimeSelectedListener {
 
     public static final int GRAPH_PRAYER_TAB = 0;
     public static final int GRAPH_QURAN_TAB = 1;
@@ -46,8 +45,12 @@ public class QamarGraphActivity extends AppCompatActivity
     private int mCurrentTab = 0;
     private int mDateOption = 1;
     private int[] mDateOffsets = new int[]{7, 14, 30, 60, 90, 180, 365, -1};
-    private int[] mTabs = new int[]{R.string.prayers_tab, R.string.quran_tab,
-            R.string.sadaqah_tab, R.string.fasting_tab, R.string.overview_tab};
+    private int[] mTabs = new int[]{
+            R.string.prayers_tab,
+            R.string.quran_tab,
+            R.string.sadaqah_tab,
+            R.string.fasting_tab,
+            R.string.overview_tab};
 
     private QamarDbAdapter mDatabaseAdapter;
 
@@ -62,19 +65,16 @@ public class QamarGraphActivity extends AppCompatActivity
 
     private GraphPagerAdapter mGraphAdapter;
     private static DateFormat mDateFormat;
-    ;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-        SharedPreferences prefs =
-                PreferenceManager.getDefaultSharedPreferences(this);
         if (prefs.getBoolean(QamarConstants.PreferenceKeys.USE_ARABIC, false)) {
             Resources resources = getResources();
             Configuration config = resources.getConfiguration();
             config.locale = new Locale("ar");
-            resources.updateConfiguration(config,
-                    resources.getDisplayMetrics());
+            resources.updateConfiguration(config, resources.getDisplayMetrics());
         }
 
         super.onCreate(savedInstanceState);
@@ -82,22 +82,19 @@ public class QamarGraphActivity extends AppCompatActivity
 
         mDatabaseAdapter = new QamarDbAdapter(this);
 
-        mGraphPager = (ViewPager) findViewById(R.id.graph_pager);
+        mGraphPager = findViewById(R.id.graph_pager);
         mGraphAdapter = new GraphPagerAdapter();
         mGraphPager.setAdapter(mGraphAdapter);
-        mMinDate = (TextView) findViewById(R.id.min_date);
-        mMaxDate = (TextView) findViewById(R.id.max_date);
-        TimeSelectorWidget timeSelectorWidget =
-                (TimeSelectorWidget) findViewById(R.id.time_selector);
+        mMinDate = findViewById(R.id.min_date);
+        mMaxDate = findViewById(R.id.max_date);
+        TimeSelectorWidget timeSelectorWidget = findViewById(R.id.time_selector);
         timeSelectorWidget.setTimeSelectedListener(this);
 
         ActionBar actionbar = getSupportActionBar();
         actionbar.setDisplayShowHomeEnabled(true);
         actionbar.setDisplayHomeAsUpEnabled(true);
-        if (getResources().getConfiguration().orientation ==
-                Configuration.ORIENTATION_LANDSCAPE) {
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
             actionbar.setTitle("");
-        }
 
         if (savedInstanceState != null) {
             mCurrentTab = savedInstanceState.getInt(LAST_SELECTED_TAB, 0);
@@ -107,9 +104,7 @@ public class QamarGraphActivity extends AppCompatActivity
 
         actionbar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
-        for (int i = 0; i < mTabs.length; i++) {
-            addTab(actionbar, i);
-        }
+        for (int i = 0; i < mTabs.length; i++) addTab(actionbar, i);
 
         updateLanguage();
         Calendar today = QamarTime.getTodayCalendar();
@@ -118,18 +113,13 @@ public class QamarGraphActivity extends AppCompatActivity
     }
 
     private void updateLanguage() {
-        SharedPreferences prefs =
-                PreferenceManager.getDefaultSharedPreferences(this);
-        boolean isArabic = prefs.getBoolean(
-                QamarConstants.PreferenceKeys.USE_ARABIC, false);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean isArabic = prefs.getBoolean(QamarConstants.PreferenceKeys.USE_ARABIC, false);
         isArabic = isArabic || "ar".equals(Locale.getDefault().getLanguage());
 
-        if (isArabic) {
-            mDateFormat = DateFormat.getDateInstance(DateFormat.DEFAULT,
-                    new Locale("ar"));
-        } else {
-            mDateFormat = DateFormat.getDateInstance(DateFormat.DEFAULT);
-        }
+        if (isArabic)
+            mDateFormat = DateFormat.getDateInstance(DateFormat.DEFAULT, new Locale("ar"));
+        else mDateFormat = DateFormat.getDateInstance(DateFormat.DEFAULT);
     }
 
     private void addTab(ActionBar actionbar, int tabNumber) {
@@ -187,18 +177,17 @@ public class QamarGraphActivity extends AppCompatActivity
         long maxTime = QamarTime.getGMTTimeFromLocal(today);
         long minTime = getGmtTimestamp(today);
 
-        if (mDataFetchTask != null) {
-            mDataFetchTask.cancel(true);
-        }
+        if (mDataFetchTask != null) mDataFetchTask.cancel(true);
+
         mDataFetchTask = new DataFetcher();
         mDataFetchTask.execute(maxTime, minTime);
     }
 
     public long getGmtTimestamp(Calendar localCal) {
         int delta = mDateOffsets[mDateOption];
-        if (delta == -1) {
-            return 0;
-        }
+
+        if (delta == -1) return 0;
+
         localCal.add(Calendar.DATE, -1 * delta);
         mMinDate.setText(mDateFormat.format(localCal.getTime()));
         return QamarTime.getGMTTimeFromLocal(localCal);
@@ -211,21 +200,21 @@ public class QamarGraphActivity extends AppCompatActivity
             long maxDate = params[0] / 1000;
             long minDate = params[1] / 1000;
 
-            if (mCurrentTab == GRAPH_PRAYER_TAB) {
-                return ScoresHelper.getPrayerScores(mDatabaseAdapter,
-                        maxDate, minDate);
-            } else if (mCurrentTab == GRAPH_QURAN_TAB) {
-                return ScoresHelper.getQuranScores(mDatabaseAdapter,
-                        maxDate, minDate);
-            } else if (mCurrentTab == GRAPH_SADAQAH_TAB) {
-                return ScoresHelper.getSadaqahScores(mDatabaseAdapter,
-                        maxDate, minDate);
-            } else if (mCurrentTab == GRAPH_FASTING_TAB) {
-                return ScoresHelper.getFastingScores(mDatabaseAdapter,
-                        maxDate, minDate);
-            } else if (mCurrentTab == GRAPH_OVERVIEW_TAB) {
-                return ScoresHelper.getOverallScores(mDatabaseAdapter,
-                        maxDate, minDate);
+            switch (mCurrentTab) {
+                case GRAPH_PRAYER_TAB:
+                    return ScoresHelper.getPrayerScores(mDatabaseAdapter, maxDate, minDate);
+
+                case GRAPH_QURAN_TAB:
+                    return ScoresHelper.getQuranScores(mDatabaseAdapter, maxDate, minDate);
+
+                case GRAPH_SADAQAH_TAB:
+                    return ScoresHelper.getSadaqahScores(mDatabaseAdapter, maxDate, minDate);
+
+                case GRAPH_FASTING_TAB:
+                    return ScoresHelper.getFastingScores(mDatabaseAdapter, maxDate, minDate);
+
+                case GRAPH_OVERVIEW_TAB:
+                    return ScoresHelper.getOverallScores(mDatabaseAdapter, maxDate, minDate);
             }
             return null;
         }
@@ -234,8 +223,7 @@ public class QamarGraphActivity extends AppCompatActivity
         protected void onPostExecute(ScoreResult result) {
             if (result != null && mGraphWidget != null) {
                 mGraphWidget.renderGraph(result.scores);
-                mStatisticsWidget.showStats(mCurrentTab, result.statistics,
-                        result.scores.size());
+                mStatisticsWidget.showStats(mCurrentTab, result.statistics, result.scores.size());
 
                 /* at the last date option, we don't know the last date until
                  * after the query.  we cache it when we render the graph and
@@ -253,6 +241,7 @@ public class QamarGraphActivity extends AppCompatActivity
     @Override
     public void onTabSelected(ActionBar.Tab tab, FragmentTransaction transaction) {
         Integer tag = (Integer) tab.getTag();
+
         if (tag != null && tag != mCurrentTab) {
             mCurrentTab = tag;
             refreshData();
@@ -275,7 +264,7 @@ public class QamarGraphActivity extends AppCompatActivity
 
         @Override
         public boolean isViewFromObject(View view, Object object) {
-            return view == (View) object;
+            return view == object;
         }
 
         @Override

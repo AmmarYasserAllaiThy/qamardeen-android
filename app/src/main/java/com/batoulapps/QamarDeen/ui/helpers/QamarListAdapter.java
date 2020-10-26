@@ -47,16 +47,15 @@ public abstract class QamarListAdapter extends BaseAdapter implements OnScrollLi
     }
 
     protected boolean updateLanguage() {
-        SharedPreferences prefs =
-                PreferenceManager.getDefaultSharedPreferences(mContext);
-        boolean isArabic = prefs.getBoolean(
-                QamarConstants.PreferenceKeys.USE_ARABIC, false);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        boolean isArabic = prefs.getBoolean(QamarConstants.PreferenceKeys.USE_ARABIC, false);
         isArabic = isArabic || "ar".equals(Locale.getDefault().getLanguage());
 
         if (isArabic) {
             mDayOfWeekFormatter = new SimpleDateFormat("EEE", new Locale("ar"));
             mDayFormatter = new SimpleDateFormat("dd", new Locale("ar"));
             mDayOfWeekStyle = R.style.day_of_week_arabic;
+
         } else {
             mDayOfWeekFormatter = new SimpleDateFormat("EEE");
             mDayFormatter = new SimpleDateFormat("dd");
@@ -95,14 +94,14 @@ public abstract class QamarListAdapter extends BaseAdapter implements OnScrollLi
     }
 
     public void requeryData() {
-        if (mDays == null || mDays.size() < 2) {
-            return;
-        }
+        if (mDays == null || mDays.size() < 2) return;
+
         Calendar endCalendar = QamarTime.getTodayCalendar();
         Date actualDate = endCalendar.getTime();
 
         Date maxDate = mDays.get(0);
         Date minDate = mDays.get(mDays.size() - 1);
+
         if (!maxDate.equals(actualDate)) {
             maxDate = actualDate;
             mDays.add(0, maxDate);
@@ -125,7 +124,7 @@ public abstract class QamarListAdapter extends BaseAdapter implements OnScrollLi
 
     @Override
     public long getItemId(int position) {
-        return ((Date) mDays.get(position)).getTime();
+        return mDays.get(position).getTime();
     }
 
     @Override
@@ -143,8 +142,7 @@ public abstract class QamarListAdapter extends BaseAdapter implements OnScrollLi
         holder.dateAreaView = convertView.findViewById(R.id.section_date_index);
         holder.dayOfWeek = convertView.findViewById(R.id.day_of_week);
         holder.dayNumber = convertView.findViewById(R.id.day_number);
-        holder.headerMonth = convertView
-                .findViewById(R.id.section_month_index);
+        holder.headerMonth = convertView.findViewById(R.id.section_month_index);
     }
 
     /**
@@ -160,37 +158,32 @@ public abstract class QamarListAdapter extends BaseAdapter implements OnScrollLi
         // handling for the color of the day area based on whether
         // the day represents today or not
         Resources res = mContext.getResources();
+
         if (DateUtils.isToday(date.getTime())) {
             holder.dateAreaView.setBackgroundResource(R.color.today_bg_color);
-            holder.dayOfWeek.setTextColor(
-                    res.getColor(R.color.today_weekday_color));
-            holder.dayNumber.setTextColor(
-                    res.getColor(R.color.today_day_color));
+            holder.dayOfWeek.setTextColor(res.getColor(R.color.today_weekday_color));
+            holder.dayNumber.setTextColor(res.getColor(R.color.today_day_color));
+
         } else {
-            holder.dateAreaView.setBackgroundResource(
-                    R.color.normal_day_bg_color);
-            holder.dayOfWeek.setTextColor(
-                    res.getColor(R.color.normal_weekday_color));
-            holder.dayNumber.setTextColor(
-                    res.getColor(R.color.normal_day_color));
+            holder.dateAreaView.setBackgroundResource(R.color.normal_day_bg_color);
+            holder.dayOfWeek.setTextColor(res.getColor(R.color.normal_weekday_color));
+            holder.dayNumber.setTextColor(res.getColor(R.color.normal_day_color));
         }
 
-        if (mDayOfWeekStyle != -1) {
-            holder.dayOfWeek.setTextAppearance(mContext, mDayOfWeekStyle);
-        }
+        if (mDayOfWeekStyle != -1) holder.dayOfWeek.setTextAppearance(mContext, mDayOfWeekStyle);
 
         holder.dayOfWeek.setText(mDayOfWeekFormatter.format(date));
         holder.dayNumber.setText(mDayFormatter.format(date));
 
         final int section = getSectionForPosition(position);
+
         if (getPositionForSection(section) == position) {
             // show header
             holder.headerMonth.setText(mMonthFormatter.format(date));
             holder.headerView.setVisibility(View.VISIBLE);
-        } else {
-            // hide header, show divider
-            holder.headerView.setVisibility(View.GONE);
-        }
+
+        } else holder.headerView.setVisibility(View.GONE); // hide header, show divider
+
     }
 
     /**
@@ -220,32 +213,25 @@ public abstract class QamarListAdapter extends BaseAdapter implements OnScrollLi
         for (int i = 0; i < max; i++) {
             Date di = mDays.get(i);
             calendar.setTime(di);
-            if (calendar.get(Calendar.MONTH) + 1 == section) {
-                return i;
-            }
+
+            if (calendar.get(Calendar.MONTH) + 1 == section) return i;
         }
         return -1;
     }
 
     @Override
     public int getPinnedHeaderState(int position) {
-        if (getCount() == 0) {
-            return PINNED_HEADER_GONE;
-        }
+        if (getCount() == 0) return PINNED_HEADER_GONE;
 
-        if (position < 0 || position >= getCount()) {
-            return PINNED_HEADER_GONE;
-        }
+        if (position < 0 || position >= getCount()) return PINNED_HEADER_GONE;
 
         // The header should get pushed up if the top item shown
         // is the last item in a section for a particular letter.
         int section = getSectionForPosition(position);
         int nextSectionPosition = getPositionForSection(section + 1);
 
-        if (nextSectionPosition != -1 &&
-                position == nextSectionPosition - 1) {
+        if (nextSectionPosition != -1 && position == nextSectionPosition - 1)
             return PINNED_HEADER_PUSHED_UP;
-        }
 
         return PINNED_HEADER_VISIBLE;
     }
@@ -253,22 +239,19 @@ public abstract class QamarListAdapter extends BaseAdapter implements OnScrollLi
     @Override
     public void configurePinnedHeader(View v, int position, int alpha) {
         if (alpha == 255) {
-            TextView monthArea =
-                    (TextView) v.findViewById(R.id.section_month_index);
+            TextView monthArea = v.findViewById(R.id.section_month_index);
             Date date = (Date) getItem(position);
-
             SimpleDateFormat monthFormatter = new SimpleDateFormat("MMM");
+
             monthArea.setText(monthFormatter.format(date));
             monthArea.setBackgroundResource(R.color.pinned_hdr_month_bg_color);
         }
     }
 
     @Override
-    public void onScroll(AbsListView view, int firstVisibleItem,
-                         int visibleItemCount, int totalItemCount) {
-        if (view instanceof PinnedHeaderListView) {
+    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+        if (view instanceof PinnedHeaderListView)
             ((PinnedHeaderListView) view).configureHeaderView(firstVisibleItem);
-        }
     }
 
     @Override
@@ -282,17 +265,10 @@ public abstract class QamarListAdapter extends BaseAdapter implements OnScrollLi
 
         // scroll either to 0 (if we are part of a header) or to
         // just under the header
-        int scrollHeight =
-                (firstRowForSection == currentRow) ? 0 : headerHeight;
+        int scrollHeight = (firstRowForSection == currentRow) ? 0 : headerHeight;
 
-        if (android.os.Build.VERSION.SDK_INT >= 11) {
-            // honeycomb+, we get smooth scrolling
-            listView.smoothScrollToPositionFromTop(currentRow,
-                    scrollHeight);
-        } else {
-            // works on older android versions
-            listView.setSelectionFromTop(currentRow, scrollHeight);
-        }
+        // honeycomb+, we get smooth scrolling
+        listView.smoothScrollToPositionFromTop(currentRow, scrollHeight);
     }
 
     protected abstract class QamarViewHolder {

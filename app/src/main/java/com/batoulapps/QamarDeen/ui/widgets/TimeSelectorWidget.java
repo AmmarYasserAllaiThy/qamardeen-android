@@ -33,8 +33,7 @@ public class TimeSelectorWidget extends LinearLayout {
         init(context);
     }
 
-    public TimeSelectorWidget(Context context,
-                              AttributeSet attrs, int defStyle) {
+    public TimeSelectorWidget(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init(context);
     }
@@ -43,25 +42,23 @@ public class TimeSelectorWidget extends LinearLayout {
         mContext = context;
         mSelectedPosition = 1;
         Resources resources = context.getResources();
-        mGraphDurations = resources.getStringArray(
-                R.array.graph_durations);
+        mGraphDurations = resources.getStringArray(R.array.graph_durations);
         mSelectedColor = resources.getColor(R.color.stats_selected_date);
-        mTextViews = new ArrayList<TextView>();
+        mTextViews = new ArrayList<>();
         setOrientation(HORIZONTAL);
 
-        LinearLayout.LayoutParams lp = new LayoutParams(0,
-                ViewGroup.LayoutParams.MATCH_PARENT, 1);
+        LinearLayout.LayoutParams lp = new LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1);
+
         for (int i = 0; i < mGraphDurations.length; i++) {
             TextView textview = new TextView(mContext);
             textview.setText(mGraphDurations[i]);
             textview.setGravity(Gravity.CENTER);
-            textview.setTextAppearance(mContext,
-                    R.style.graph_stats_datepick_text);
-            if (mSelectedPosition == i) {
-                textview.setBackgroundColor(mSelectedColor);
-            }
+            textview.setTextAppearance(mContext, R.style.graph_stats_datepick_text);
+
+            if (mSelectedPosition == i) textview.setBackgroundColor(mSelectedColor);
+
             textview.setOnClickListener(mOnClickListener);
-            textview.setTag(Integer.valueOf(i));
+            textview.setTag(i);
             addView(textview, lp);
             mTextViews.add(textview);
         }
@@ -85,9 +82,11 @@ public class TimeSelectorWidget extends LinearLayout {
         @Override
         public void onClick(View view) {
             Object tag = view.getTag();
+
             if (tag instanceof Integer) {
-                Integer tagValue = (Integer) tag;
-                if (tagValue != null && mTimeSelectedListener != null) {
+                int tagValue = (Integer) tag;
+
+                if (mTimeSelectedListener != null) {
                     mTimeSelectedListener.timeSelected(tagValue);
                     updateSelectedItem(tagValue);
                 }
@@ -100,6 +99,6 @@ public class TimeSelectorWidget extends LinearLayout {
     }
 
     public interface TimeSelectedListener {
-        public void timeSelected(int position);
+        void timeSelected(int position);
     }
 }

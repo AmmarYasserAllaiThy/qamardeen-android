@@ -19,6 +19,7 @@ public class QamarPreferencesActivity extends AppCompatActivity {
         setContentView(R.layout.preferences);
 
         final ActionBar ab = getSupportActionBar();
+
         if (ab != null) {
             ab.setDisplayHomeAsUpEnabled(true);
             ab.setTitle(R.string.settings_menu);
@@ -26,11 +27,10 @@ public class QamarPreferencesActivity extends AppCompatActivity {
 
         final FragmentManager fm = getFragmentManager();
         fragment = (QamarPreferencesFragment) fm.findFragmentById(R.id.content);
+
         if (fragment == null) {
             fragment = new QamarPreferencesFragment();
-            fm.beginTransaction()
-                    .replace(R.id.content, fragment)
-                    .commit();
+            fm.beginTransaction().replace(R.id.content, fragment).commit();
         }
     }
 
@@ -45,9 +45,8 @@ public class QamarPreferencesActivity extends AppCompatActivity {
             i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(i);
             finish();
-        } else {
-            super.onBackPressed();
-        }
+
+        } else super.onBackPressed();
     }
 
     @Override

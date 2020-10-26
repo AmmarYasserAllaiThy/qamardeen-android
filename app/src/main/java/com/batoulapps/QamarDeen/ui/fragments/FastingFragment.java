@@ -7,8 +7,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.TextView;
 
 import com.batoulapps.QamarDeen.QamarDeenActivity;
@@ -30,15 +28,20 @@ import java.util.Map;
 public class FastingFragment extends QamarFragment {
 
     public static int[] FASTING_HIGHLIGHT_IMAGES = new int[]{
-            R.drawable.fasting_row_fareedah, R.drawable.fasting_row_tatawou,
-            R.drawable.fasting_row_qadaa, R.drawable.fasting_row_kaffarah,
+            R.drawable.fasting_row_fareedah,
+            R.drawable.fasting_row_tatawou,
+            R.drawable.fasting_row_qadaa,
+            R.drawable.fasting_row_kaffarah,
             R.drawable.fasting_row_nazr
     };
 
     public static int[] FASTING_POPUP_IMAGES = new int[]{
-            R.drawable.fasting_hud_fareedah, R.drawable.fasting_hud_sunnah,
-            R.drawable.fasting_hud_qadaa, R.drawable.fasting_hud_kaffarah,
-            R.drawable.fasting_hud_nazr, R.drawable.fasting_hud_not
+            R.drawable.fasting_hud_fareedah,
+            R.drawable.fasting_hud_sunnah,
+            R.drawable.fasting_hud_qadaa,
+            R.drawable.fasting_hud_kaffarah,
+            R.drawable.fasting_hud_nazr,
+            R.drawable.fasting_hud_not
     };
 
     private AsyncTask<Integer, Void, Boolean> mWritingTask = null;
@@ -63,23 +66,12 @@ public class FastingFragment extends QamarFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
-        mListView.setOnItemClickListener(new OnItemClickListener() {
 
-            @Override
-            public void onItemClick(AdapterView<?> parent, final View view,
-                                    final int position, long id) {
-                mListAdapter.scrollListToPosition(
-                        mListView, position, mHeaderHeight);
-                view.postDelayed(
-                        new Runnable() {
-                            public void run() {
-                                popupFastingBox(view, position);
-                            }
-                        }, 50);
-            }
+        mListView.setOnItemClickListener((parent, view1, position, id) -> {
+            mListAdapter.scrollListToPosition(mListView, position, mHeaderHeight);
+            view1.postDelayed(() -> popupFastingBox(view1, position), 50);
         });
 
         return view;
@@ -92,8 +84,7 @@ public class FastingFragment extends QamarFragment {
             long maxDate = params[0];
             long minDate = params[1];
 
-            QamarDeenActivity activity =
-                    (QamarDeenActivity) FastingFragment.this.getActivity();
+            QamarDeenActivity activity = (QamarDeenActivity) FastingFragment.this.getActivity();
             QamarDbAdapter adapter = activity.getDatabaseAdapter();
             return adapter.getFastingEntries(maxDate / 1000, minDate / 1000);
         }
@@ -102,7 +93,8 @@ public class FastingFragment extends QamarFragment {
         protected void onPostExecute(Cursor cursor) {
             if (cursor != null) {
                 if (cursor.moveToFirst()) {
-                    Map<Long, Integer> data = new HashMap<Long, Integer>();
+                    Map<Long, Integer> data = new HashMap<>();
+
                     do {
                         long timestamp = cursor.getLong(1) * 1000;
                         int fastingType = cursor.getInt(2);
@@ -113,47 +105,43 @@ public class FastingFragment extends QamarFragment {
                         long localTimestamp = QamarTime.getLocalTimeFromGMT(gmtCal);
 
                         data.put(localTimestamp, fastingType);
-                    }
-                    while (cursor.moveToNext());
 
-                    if (!data.isEmpty()) {
-                        // set the data in the adapter
-                        ((FastingListAdapter) mListAdapter).addDayData(data);
-                    }
+                    } while (cursor.moveToNext());
+
+                    // set the data in the adapter
+                    if (!data.isEmpty()) ((FastingListAdapter) mListAdapter).addDayData(data);
                 }
+
                 cursor.close();
                 mListAdapter.notifyDataSetChanged();
                 mReadData = true;
-            } else {
-                mReadData = false;
-            }
+
+            } else mReadData = false;
+
             mLoadingTask = null;
         }
     }
 
     @Override
     public void onItemSelected(int row, int itemId, int selection) {
-        long ts = -1;
+        long ts;
 
         // get the row of the selection
         Object dateObj = mListView.getItemAtPosition(row);
-        if (dateObj == null) {
-            return;
-        }
+        if (dateObj == null) return;
 
         // get the timestamp corresponding to the row
         Date date = (Date) dateObj;
         ts = QamarTime.getGMTTimeFromLocalDate(date);
 
-        if (mWritingTask != null) {
-            mWritingTask.cancel(true);
-        }
+        if (mWritingTask != null) mWritingTask.cancel(true);
+
         mWritingTask = new WriteFastingDataTask(ts);
         mWritingTask.execute(row, selection);
     }
 
     private class WriteFastingDataTask extends AsyncTask<Integer, Void, Boolean> {
-        private long mTimestamp = -1;
+        private long mTimestamp;
         private int mSelectedRow = -1;
         private int mSelectionValue = -1;
 
@@ -166,41 +154,39 @@ public class FastingFragment extends QamarFragment {
             mSelectedRow = params[0];
             mSelectionValue = params[1];
 
-            QamarDeenActivity activity =
-                    (QamarDeenActivity) FastingFragment.this.getActivity();
+            QamarDeenActivity activity = (QamarDeenActivity) FastingFragment.this.getActivity();
             QamarDbAdapter adapter = activity.getDatabaseAdapter();
             return adapter.writeFastingEntry(mTimestamp / 1000, mSelectionValue);
         }
 
         @Override
         protected void onPostExecute(Boolean result) {
-            if (result != null && result == true) {
+            if (result != null && result) {
                 // calculate the local timestamp
                 Calendar gmtCal = QamarTime.getGMTCalendar();
                 gmtCal.setTimeInMillis(mTimestamp);
                 long localTimestamp = QamarTime.getLocalTimeFromGMT(gmtCal);
 
                 // update the list adapter with the data
-                ((FastingListAdapter) mListAdapter)
-                        .addOneFastData(localTimestamp, mSelectionValue);
+                ((FastingListAdapter) mListAdapter).addOneFastData(localTimestamp, mSelectionValue);
 
                 boolean refreshed = false;
 
                 // attempt to refresh just this one list item
                 int start = mListView.getFirstVisiblePosition();
                 int end = mListView.getLastVisiblePosition();
+
                 if (mSelectedRow >= start && mSelectedRow <= end) {
                     View view = mListView.getChildAt(mSelectedRow - start);
+
                     if (view != null) {
                         mListAdapter.getView(mSelectedRow, view, mListView);
                         refreshed = true;
                     }
                 }
 
-                if (!refreshed) {
-                    // if we can't, refresh everything
-                    mListAdapter.notifyDataSetChanged();
-                }
+                // if we can't, refresh everything
+                if (!refreshed) mListAdapter.notifyDataSetChanged();
             }
             mWritingTask = null;
         }
@@ -210,55 +196,52 @@ public class FastingFragment extends QamarFragment {
         Integer sel = ((FastingListAdapter) mListAdapter).getDayData(currentRow);
 
         boolean isRamadan = false;
-        Date date = (Date) ((FastingListAdapter) mListAdapter).getItem(currentRow);
+        Date date = (Date) mListAdapter.getItem(currentRow);
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         HijriDate hijriDate = HijriUtils.getHijriDate(cal);
-        if (hijriDate.month == 9) {
-            isRamadan = true;
-        }
 
+        if (hijriDate.month == 9) isRamadan = true;
 
         boolean[] enabledStatus = new boolean[6];
-        for (int i = 0; i <= 5; i++) {
-            if (isRamadan && i == 0) {
-                enabledStatus[i] = true;
-            } else if (!isRamadan && i != 0) {
-                enabledStatus[i] = true;
-            } else {
-                enabledStatus[i] = false;
-            }
-        }
+
+        for (int i = 0; i <= 5; i++)
+            if (isRamadan && i == 0) enabledStatus[i] = true;
+            else enabledStatus[i] = !isRamadan && i != 0;
+
         enabledStatus[5] = true;
 
-        mPopupHelper.showPopup(this, anchorView, currentRow,
-                currentRow, sel, R.array.fasting_options, R.array.fasting_values,
-                FASTING_POPUP_IMAGES, enabledStatus);
+        mPopupHelper.showPopup(
+                this,
+                anchorView,
+                currentRow,
+                currentRow,
+                sel,
+                R.array.fasting_options,
+                R.array.fasting_values,
+                FASTING_POPUP_IMAGES,
+                enabledStatus);
     }
 
     private class FastingListAdapter extends QamarListAdapter {
-        private String[] mFastingTypes = null;
-        private String[] mIslamicMonths = null;
-        private Map<Long, Integer> mDataMap = new HashMap<Long, Integer>();
+        private String[] mFastingTypes;
+        private String[] mIslamicMonths;
+        private Map<Long, Integer> mDataMap = new HashMap<>();
         private NumberFormat mHijriDateFormatter;
 
         public FastingListAdapter(Context context) {
             super(context);
-            mFastingTypes = getResources()
-                    .getStringArray(R.array.fasting_options);
-            mIslamicMonths = getResources()
-                    .getStringArray(R.array.islamic_months);
+            mFastingTypes = getResources().getStringArray(R.array.fasting_options);
+            mIslamicMonths = getResources().getStringArray(R.array.islamic_months);
         }
 
         @Override
         protected boolean updateLanguage() {
             boolean isArabic = super.updateLanguage();
-            if (isArabic) {
-                mHijriDateFormatter = NumberFormat.getIntegerInstance(
-                        new Locale("ar"));
-            } else {
-                mHijriDateFormatter = NumberFormat.getIntegerInstance();
-            }
+
+            if (isArabic) mHijriDateFormatter = NumberFormat.getIntegerInstance(new Locale("ar"));
+            else mHijriDateFormatter = NumberFormat.getIntegerInstance();
+
             mHijriDateFormatter.setMinimumIntegerDigits(2);
             return isArabic;
         }
@@ -290,19 +273,15 @@ public class FastingFragment extends QamarFragment {
                 ViewHolder h = new ViewHolder();
                 convertView = mInflater.inflate(R.layout.fasting_layout, null);
                 populateDayInfoInHolder(h, convertView, R.id.fasting_hdr);
-                h.hijriDay =
-                        (TextView) convertView.findViewById(R.id.fasting_hijri_day);
-                h.hijriMonth =
-                        (TextView) convertView.findViewById(R.id.fasting_hijri_month);
-                h.fastingType =
-                        (TextView) convertView.findViewById(R.id.fasting_type);
+                h.hijriDay = convertView.findViewById(R.id.fasting_hijri_day);
+                h.hijriMonth = convertView.findViewById(R.id.fasting_hijri_month);
+                h.fastingType = convertView.findViewById(R.id.fasting_type);
                 h.fastingArea = convertView.findViewById(R.id.fasting_area);
 
                 holder = h;
                 convertView.setTag(holder);
-            } else {
-                holder = (ViewHolder) convertView.getTag();
-            }
+
+            } else holder = (ViewHolder) convertView.getTag();
 
             initializeRow(holder, date, position);
             Calendar cal = Calendar.getInstance();
@@ -314,11 +293,13 @@ public class FastingFragment extends QamarFragment {
             holder.hijriMonth.setText(mIslamicMonths[hijriDate.month - 1]);
 
             Integer val = mDataMap.get(date.getTime());
+
             if (val != null && val > 0) {
                 int drawableId = FASTING_HIGHLIGHT_IMAGES[val - 1];
                 holder.fastingArea.setBackgroundResource(drawableId);
                 holder.fastingArea.setPadding(0, 0, 0, 0);
                 holder.fastingType.setText(mFastingTypes[val - 1]);
+
             } else {
                 holder.fastingArea.setBackgroundDrawable(null);
                 holder.fastingType.setText("");
@@ -330,9 +311,7 @@ public class FastingFragment extends QamarFragment {
         @Override
         public void configurePinnedHeader(View v, int position, int alpha) {
             super.configurePinnedHeader(v, position, alpha);
-            if (alpha == 255) {
-                v.setBackgroundResource(R.color.pinned_hdr_background);
-            }
+            if (alpha == 255) v.setBackgroundResource(R.color.pinned_hdr_background);
         }
 
         class ViewHolder extends QamarViewHolder {
@@ -342,5 +321,4 @@ public class FastingFragment extends QamarFragment {
             View fastingArea;
         }
     }
-
 }

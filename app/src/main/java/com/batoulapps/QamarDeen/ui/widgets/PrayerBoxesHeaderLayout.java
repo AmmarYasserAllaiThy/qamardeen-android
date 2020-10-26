@@ -20,13 +20,20 @@ public class PrayerBoxesHeaderLayout extends LinearLayout {
     private static int QIYYAM = 6;
 
     private int[] mPrayerNames = new int[]{
-            R.string.fajr, R.string.dhuhr, R.string.asr,
-            R.string.maghrib, R.string.isha
+            R.string.fajr,
+            R.string.dhuhr,
+            R.string.asr,
+            R.string.maghrib,
+            R.string.isha
     };
 
     private int[] mExtendedPrayerNames = new int[]{
-            R.string.fajr, R.string.duha, R.string.dhuhr,
-            R.string.asr, R.string.maghrib, R.string.isha,
+            R.string.fajr,
+            R.string.duha,
+            R.string.dhuhr,
+            R.string.asr,
+            R.string.maghrib,
+            R.string.isha,
             R.string.qiyyam
     };
 
@@ -48,6 +55,7 @@ public class PrayerBoxesHeaderLayout extends LinearLayout {
     private void init(Context context) {
         mContext = context;
         mLabels = new ArrayList<>();
+
         for (int i = 0; i < 5; i++) {
             TextView label = getLabelView();
             addView(label, i);
@@ -58,7 +66,9 @@ public class PrayerBoxesHeaderLayout extends LinearLayout {
     private TextView getLabelView() {
         TextView label = new TextView(mContext);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                0, LayoutParams.MATCH_PARENT, 1);
+                0,
+                LayoutParams.MATCH_PARENT,
+                1);
         label.setLayoutParams(lp);
         label.setGravity(Gravity.CENTER | Gravity.CENTER_VERTICAL);
         return label;
@@ -78,6 +88,7 @@ public class PrayerBoxesHeaderLayout extends LinearLayout {
 
             // set extend mode
             mIsExtendedMode = true;
+
         } else if (!extendedMode && mIsExtendedMode) {
             // remove qiyyam
             TextView tahajjud = mLabels.remove(QIYYAM);
@@ -93,12 +104,13 @@ public class PrayerBoxesHeaderLayout extends LinearLayout {
     }
 
     public void showSalahLabels() {
-        int size = mLabels.size();
         int style = R.style.qamar_hdr;
-        if (mIsExtendedMode) {
-            style = R.style.prayer_extended_hdr;
-        }
+
+        if (mIsExtendedMode) style = R.style.prayer_extended_hdr;
+
+        int size = mLabels.size();
         int[] resources = mIsExtendedMode ? mExtendedPrayerNames : mPrayerNames;
+
         for (int i = 0; i < size; i++) {
             TextView label = mLabels.get(i);
             label.setText(resources[i]);

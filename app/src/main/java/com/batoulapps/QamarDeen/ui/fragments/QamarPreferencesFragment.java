@@ -3,7 +3,6 @@ package com.batoulapps.QamarDeen.ui.fragments;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.os.AsyncTask;
@@ -45,6 +44,7 @@ public class QamarPreferencesFragment extends PreferenceFragment
         addPreferencesFromResource(R.xml.preferences);
 
         mGenderPreference = findPreference(QamarConstants.PreferenceKeys.GENDER_PREF);
+
         if (mGenderPreference != null) {
             mGenderPreference.setOnPreferenceChangeListener(this);
             updateGenderPreference();
@@ -52,57 +52,55 @@ public class QamarPreferencesFragment extends PreferenceFragment
 
         Activity activity = getActivity();
         PreferenceScreen about = (PreferenceScreen) findPreference("about");
+
         if (about != null) {
             String title = getString(R.string.qamar_about_title);
+
             try {
-                PackageInfo info = activity.getPackageManager()
-                        .getPackageInfo(activity.getPackageName(), 0);
+                PackageInfo info = activity.getPackageManager().getPackageInfo(
+                        activity.getPackageName(),
+                        0);
                 title = String.format(title, info.versionName);
                 about.setTitle(title);
-            } catch (Exception e) {
+
+            } catch (Exception ignored) {
             }
         }
 
         // backup and restore
         Preference backup = findPreference("backup");
-        if (backup != null) {
-            backup.setOnPreferenceClickListener(mOnPreferenceClickListener);
-        }
+        if (backup != null) backup.setOnPreferenceClickListener(mOnPreferenceClickListener);
 
         boolean enabled = false;
         mRestorePreference = findPreference("restore");
+
         if (mRestorePreference != null) {
             try {
                 File restoreFile = getBackupFile();
                 enabled = restoreFile.exists();
-            } catch (Exception e) {
+
+            } catch (Exception ignored) {
             }
+
             mRestorePreference.setEnabled(enabled);
             mRestorePreference.setOnPreferenceClickListener(mOnPreferenceClickListener);
         }
 
         // arabic preferences
-        mArabicPreference = (CheckBoxPreference) findPreference(
-                QamarConstants.PreferenceKeys.USE_ARABIC);
+        mArabicPreference = (CheckBoxPreference) findPreference(QamarConstants.PreferenceKeys.USE_ARABIC);
+
         if (mArabicPreference != null) {
-            if ("ar".equals(Locale.getDefault().getLanguage())) {
-                mArabicPreference.setEnabled(false);
-            } else {
-                mArabicPreference.setOnPreferenceChangeListener(this);
-            }
+            if ("ar".equals(Locale.getDefault().getLanguage())) mArabicPreference.setEnabled(false);
+            else mArabicPreference.setOnPreferenceChangeListener(this);
+
             mUsingArabic = mArabicPreference.isChecked();
         }
     }
 
     @Override
     public void onDestroy() {
-        if (mGenderPreference != null) {
-            mGenderPreference.setOnPreferenceChangeListener(null);
-        }
-
-        if (mArabicPreference != null) {
-            mArabicPreference.setOnPreferenceChangeListener(null);
-        }
+        if (mGenderPreference != null) mGenderPreference.setOnPreferenceChangeListener(null);
+        if (mArabicPreference != null) mArabicPreference.setOnPreferenceChangeListener(null);
 
         if (mDialog != null) {
             mDialog.dismiss();
@@ -113,14 +111,14 @@ public class QamarPreferencesFragment extends PreferenceFragment
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
-        if (preference.getKey().equals(QamarConstants.PreferenceKeys.GENDER_PREF)) {
+        if (preference.getKey().equals(QamarConstants.PreferenceKeys.GENDER_PREF))
             updateGenderPreference(newValue);
-        } else if (preference.getKey().equals(QamarConstants.PreferenceKeys.USE_ARABIC)) {
-            if (newValue != null && newValue instanceof Boolean) {
+
+        else if (preference.getKey().equals(QamarConstants.PreferenceKeys.USE_ARABIC))
+            if (newValue instanceof Boolean) {
                 Boolean value = (Boolean) newValue;
                 mArabicChanged = value != mUsingArabic;
             }
-        }
         return true;
     }
 
@@ -134,9 +132,9 @@ public class QamarPreferencesFragment extends PreferenceFragment
                 public boolean onPreferenceClick(Preference preference) {
                     if ("backup".equals(preference.getKey())) {
                         File backupFile = getBackupFile();
-                        if (!backupFile.exists()) {
-                            backupDatabase();
-                        } else {
+
+                        if (!backupFile.exists()) backupDatabase();
+                        else {
                             mDialog = makeBackupDialog();
                             mDialog.show();
                         }
@@ -149,30 +147,26 @@ public class QamarPreferencesFragment extends PreferenceFragment
             };
 
     private AlertDialog makeBackupDialog() {
-        AlertDialog.Builder builder = getBuilder(R.string.overwrite_current_db,
+        AlertDialog.Builder builder = getBuilder(
+                R.string.overwrite_current_db,
                 R.string.overwrite_current_backup_msg);
         builder.setPositiveButton(R.string.yes,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                        mDialog = null;
-                        backupDatabase();
-                    }
+                (dialog, which) -> {
+                    dialog.dismiss();
+                    mDialog = null;
+                    backupDatabase();
                 });
         return builder.create();
     }
 
     private AlertDialog makeRestoreDialog() {
-        AlertDialog.Builder builder = getBuilder(R.string.overwrite_current_db,
+        AlertDialog.Builder builder = getBuilder(
+                R.string.overwrite_current_db,
                 R.string.overwrite_current_db_msg);
-        builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-                mDialog = null;
-                restoreDatabase();
-            }
+        builder.setPositiveButton(R.string.yes, (dialog, which) -> {
+            dialog.dismiss();
+            mDialog = null;
+            restoreDatabase();
         });
         return builder.create();
     }
@@ -181,19 +175,13 @@ public class QamarPreferencesFragment extends PreferenceFragment
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(title)
                 .setMessage(message)
-                .setOnCancelListener(new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialog) {
-                        dialog.dismiss();
-                        mDialog = null;
-                    }
+                .setOnCancelListener(dialog -> {
+                    dialog.dismiss();
+                    mDialog = null;
                 })
-                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                        mDialog = null;
-                    }
+                .setNegativeButton(R.string.no, (dialog, which) -> {
+                    dialog.dismiss();
+                    mDialog = null;
                 });
         return builder;
     }
@@ -202,21 +190,19 @@ public class QamarPreferencesFragment extends PreferenceFragment
         try {
             File destinationFile = getBackupFile();
             File sourceFile = getActivity().getDatabasePath(QamarDbHelper.DATABASE_NAME);
+
             if (!sourceFile.exists()) {
                 // error
-                Toast.makeText(getActivity(), R.string.error_backing_up_database,
-                        Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), R.string.error_backing_up_database, Toast.LENGTH_LONG).show();
                 return;
             }
 
-            if (destinationFile.exists()) {
-                destinationFile.delete();
-            }
+            if (destinationFile.exists()) destinationFile.delete();
 
             new BackupAsyncTask().execute(sourceFile, destinationFile);
+
         } catch (Exception e) {
-            Toast.makeText(getActivity(), R.string.error_backing_up_database,
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(getActivity(), R.string.error_backing_up_database, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -224,21 +210,19 @@ public class QamarPreferencesFragment extends PreferenceFragment
         try {
             File backupFile = getBackupFile();
             File destinationFile = getActivity().getDatabasePath(QamarDbHelper.DATABASE_NAME);
+
             if (!backupFile.exists()) {
                 // error
-                Toast.makeText(getActivity(), R.string.error_restoring_database,
-                        Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), R.string.error_restoring_database, Toast.LENGTH_LONG).show();
                 return;
             }
 
-            if (destinationFile.exists()) {
-                destinationFile.delete();
-            }
+            if (destinationFile.exists()) destinationFile.delete();
 
             new RestoreAsyncTask().execute(backupFile, destinationFile);
+
         } catch (Exception e) {
-            Toast.makeText(getActivity(), R.string.error_restoring_database,
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(getActivity(), R.string.error_restoring_database, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -291,15 +275,9 @@ public class QamarPreferencesFragment extends PreferenceFragment
     }
 
     public static void copyFile(File src, File dst) throws IOException {
-        FileChannel inChannel = new FileInputStream(src).getChannel();
-        FileChannel outChannel = new FileOutputStream(dst).getChannel();
-        try {
+        try (FileChannel inChannel = new FileInputStream(src).getChannel();
+             FileChannel outChannel = new FileOutputStream(dst).getChannel()) {
             inChannel.transferTo(0, inChannel.size(), outChannel);
-        } finally {
-            if (inChannel != null)
-                inChannel.close();
-            if (outChannel != null)
-                outChannel.close();
         }
     }
 
@@ -315,12 +293,9 @@ public class QamarPreferencesFragment extends PreferenceFragment
     }
 
     private void updateGenderPreference(Object value) {
-        if (mGenderPreference != null) {
-            if ("female".equals(value.toString())) {
+        if (mGenderPreference != null)
+            if ("female".equals(value.toString()))
                 mGenderPreference.setSummary(R.string.pref_gender_female);
-            } else {
-                mGenderPreference.setSummary(R.string.pref_gender_male);
-            }
-        }
+            else mGenderPreference.setSummary(R.string.pref_gender_male);
     }
 }

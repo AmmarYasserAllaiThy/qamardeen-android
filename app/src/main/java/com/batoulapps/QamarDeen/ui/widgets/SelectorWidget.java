@@ -48,34 +48,40 @@ public class SelectorWidget extends LinearLayout {
     protected OnClickListener mOnClickListener = v -> {
         if (mItemSelectListener != null) {
             int item = (Integer) v.getTag();
+
             if (mIsMultipleChoiceMode) {
-                Integer boxedItem = Integer.valueOf(item);
+                Integer boxedItem = item;
+
                 if (mSelectedItems.contains(boxedItem)) {
                     mSelectedItems.remove(boxedItem);
+
                     if (mUseCustomImageIdsOnSelect) {
                         int i = getItemIndexFromTag(item);
 
-                        if (i < mTags.length) {
-                            // update the drawable
+                        // update the drawable
+                        if (i < mTags.length)
                             ((TextView) v).setCompoundDrawablesWithIntrinsicBounds(
-                                    mImageIds[i], 0, 0, 0);
-                        }
+                                    mImageIds[i],
+                                    0,
+                                    0,
+                                    0);
                     }
                 } else {
                     mSelectedItems.add(boxedItem);
+
                     if (mUseCustomImageIdsOnSelect) {
                         int i = getItemIndexFromTag(item);
 
-                        if (i < mTags.length) {
-                            // update the drawable
+                        // update the drawable
+                        if (i < mTags.length)
                             ((TextView) v).setCompoundDrawablesWithIntrinsicBounds(
-                                    mSelectedStateImageIds[i], 0, 0, 0);
-                        }
+                                    mSelectedStateImageIds[i],
+                                    0,
+                                    0,
+                                    0);
                     }
                 }
-            } else {
-                mItemSelectListener.itemSelected(item);
-            }
+            } else mItemSelectListener.itemSelected(item);
         }
     };
 
@@ -102,17 +108,12 @@ public class SelectorWidget extends LinearLayout {
      * @return the index of the items for drawable lookup purposes
      */
     private int getItemIndexFromTag(int tag) {
-        int i = 0;
-        for (i = 0; i < mTags.length; i++) {
-            if (mTags[i] == tag) {
-                break;
-            }
-        }
+        int i;
+        for (i = 0; i < mTags.length; i++) if (mTags[i] == tag) break;
         return i;
     }
 
-    public void setSelectionItems(String[] labels, int[] tags,
-                                  int[] imageIds, List<Integer> selectedItems,
+    public void setSelectionItems(String[] labels, int[] tags, int[] imageIds, List<Integer> selectedItems,
                                   int[] selectedStateImageIds, boolean[] enabledStates) {
         removeAllViews();
 
@@ -126,9 +127,9 @@ public class SelectorWidget extends LinearLayout {
 
         // make and add the text views
         mOptionItems = new ArrayList<>();
-        LinearLayout.LayoutParams textParams =
-                new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,
-                        LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(
+                LayoutParams.MATCH_PARENT,
+                LayoutParams.WRAP_CONTENT);
 
         for (int i = 0; i < labels.length; i++) {
             TextView tv = new TextView(mContext);
@@ -137,66 +138,54 @@ public class SelectorWidget extends LinearLayout {
             tv.setTag(tags[i]);
             tv.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
 
-            if (selectedStateImageIds == null) {
-                // set default background
+            // set default background
+            if (selectedStateImageIds == null)
                 tv.setBackgroundResource(R.drawable.popup_selector_bg);
-            }
 
             int imageId = imageIds[i];
+
             if (selectedItems != null && selectedItems.contains(tags[i])) {
                 // this item should be selected
                 tv.setSelected(true);
-                if (selectedStateImageIds != null) {
-                    imageId = selectedStateImageIds[i];
-                }
+
+                if (selectedStateImageIds != null) imageId = selectedStateImageIds[i];
             }
 
             // add images to the textviews
-            if (imageIds != null) {
-                tv.setCompoundDrawablesWithIntrinsicBounds(imageId, 0, 0, 0);
-            }
+            tv.setCompoundDrawablesWithIntrinsicBounds(imageId, 0, 0, 0);
 
-            if (enabledStates != null) {
-                if (enabledStates[i]) {
-                    tv.setEnabled(true);
-                } else {
+            if (enabledStates != null)
+                if (enabledStates[i]) tv.setEnabled(true);
+                else {
                     tv.setEnabled(false);
                     tv.setTextColor(Color.GRAY);
                 }
-            }
 
             // set button click listener
             tv.setOnClickListener(mOnClickListener);
 
-            if (i % 2 == 0) {
-                leftLayout.addView(tv, textParams);
-            } else {
-                rightLayout.addView(tv, textParams);
-            }
+            if (i % 2 == 0) leftLayout.addView(tv, textParams);
+            else rightLayout.addView(tv, textParams);
+
             mOptionItems.add(tv);
         }
 
         // add layouts to view
-        LinearLayout.LayoutParams params =
-                new LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT);
         params.weight = 1.0f;
         addView(leftLayout, params);
         addView(rightLayout, params);
 
         // set the selected items (useful for multi-mode)
         mSelectedItems = selectedItems;
-        if (mSelectedItems == null) {
-            mSelectedItems = new ArrayList<Integer>();
-        }
+        if (mSelectedItems == null) mSelectedItems = new ArrayList<>();
 
         // save resource information
         mTags = tags;
         mImageIds = imageIds;
         mUseCustomImageIdsOnSelect = false;
         mSelectedStateImageIds = selectedStateImageIds;
-        if (selectedStateImageIds != null) {
-            mUseCustomImageIdsOnSelect = true;
-        }
+        if (selectedStateImageIds != null) mUseCustomImageIdsOnSelect = true;
 
         // request layout
         requestLayout();

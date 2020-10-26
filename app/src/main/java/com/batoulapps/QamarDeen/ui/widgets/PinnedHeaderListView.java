@@ -96,9 +96,8 @@ public class PinnedHeaderListView extends ListView {
         // Disable vertical fading when the pinned header is present
         // TODO change ListView to allow separate measures for top and bottom fading edge;
         // in this particular case we would like to disable the top, but not the bottom edge.
-        if (mHeaderView != null) {
-            setFadingEdgeLength(0);
-        }
+        if (mHeaderView != null) setFadingEdgeLength(0);
+
         requestLayout();
     }
 
@@ -115,6 +114,7 @@ public class PinnedHeaderListView extends ListView {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
         if (mHeaderView != null) {
             measureChild(mHeaderView, widthMeasureSpec, heightMeasureSpec);
             mHeaderViewWidth = mHeaderView.getMeasuredWidth();
@@ -125,6 +125,7 @@ public class PinnedHeaderListView extends ListView {
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
+
         if (mHeaderView != null) {
             mHeaderView.layout(0, 0, mHeaderViewWidth, mHeaderViewHeight);
             configureHeaderView(getFirstVisiblePosition());
@@ -132,32 +133,31 @@ public class PinnedHeaderListView extends ListView {
     }
 
     public void configureHeaderView(int position) {
-        if (mHeaderView == null) {
-            return;
-        }
+        if (mHeaderView == null) return;
 
         int state = mAdapter.getPinnedHeaderState(position);
+
         switch (state) {
-            case PinnedHeaderAdapter.PINNED_HEADER_GONE: {
+            case PinnedHeaderAdapter.PINNED_HEADER_GONE:
                 mHeaderViewVisible = false;
                 break;
-            }
 
-            case PinnedHeaderAdapter.PINNED_HEADER_VISIBLE: {
+            case PinnedHeaderAdapter.PINNED_HEADER_VISIBLE:
                 mAdapter.configurePinnedHeader(mHeaderView, position, MAX_ALPHA);
-                if (mHeaderView.getTop() != 0) {
+
+                if (mHeaderView.getTop() != 0)
                     mHeaderView.layout(0, 0, mHeaderViewWidth, mHeaderViewHeight);
-                }
+
                 mHeaderViewVisible = true;
                 break;
-            }
 
-            case PinnedHeaderAdapter.PINNED_HEADER_PUSHED_UP: {
+            case PinnedHeaderAdapter.PINNED_HEADER_PUSHED_UP:
                 View firstView = getChildAt(0);
                 int bottom = firstView.getBottom();
                 int headerHeight = mHeaderView.getHeight();
                 int y;
                 int alpha;
+
                 if (bottom < headerHeight) {
                     y = (bottom - headerHeight);
                     alpha = MAX_ALPHA * (headerHeight + y) / headerHeight;
@@ -165,22 +165,21 @@ public class PinnedHeaderListView extends ListView {
                     y = 0;
                     alpha = MAX_ALPHA;
                 }
+
                 mAdapter.configurePinnedHeader(mHeaderView, position, alpha);
-                if (mHeaderView.getTop() != y) {
+
+                if (mHeaderView.getTop() != y)
                     mHeaderView.layout(0, y, mHeaderViewWidth, mHeaderViewHeight + y);
-                }
+
                 mHeaderViewVisible = true;
                 break;
-            }
         }
     }
 
     @Override
     protected void dispatchDraw(Canvas canvas) {
         super.dispatchDraw(canvas);
-        if (mHeaderViewVisible) {
-            drawChild(canvas, mHeaderView, getDrawingTime());
-        }
-    }
 
+        if (mHeaderViewVisible) drawChild(canvas, mHeaderView, getDrawingTime());
+    }
 }

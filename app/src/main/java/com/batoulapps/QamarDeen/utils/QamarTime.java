@@ -15,6 +15,7 @@ public class QamarTime {
         c.set(Calendar.SECOND, 0);
         c.set(Calendar.MILLISECOND, 0);
         c.set(Calendar.AM_PM, Calendar.PM);
+
         return c;
     }
 
@@ -25,6 +26,7 @@ public class QamarTime {
         c.set(Calendar.SECOND, 0);
         c.set(Calendar.MILLISECOND, 0);
         c.set(Calendar.AM_PM, Calendar.PM);
+
         return c;
     }
 
@@ -48,9 +50,7 @@ public class QamarTime {
      */
     public static Calendar getLocalCalendarFromGMT(Calendar gmtCal) {
         Calendar localTime = getTodayCalendar();
-        localTime.set(gmtCal.get(Calendar.YEAR),
-                gmtCal.get(Calendar.MONTH),
-                gmtCal.get(Calendar.DATE));
+        localTime.set(gmtCal.get(Calendar.YEAR), gmtCal.get(Calendar.MONTH), gmtCal.get(Calendar.DATE));
         return localTime;
     }
 
@@ -63,9 +63,7 @@ public class QamarTime {
      */
     public static long getGMTTimeFromLocal(Calendar localCal) {
         Calendar gmtTime = getGMTCalendar();
-        gmtTime.set(localCal.get(Calendar.YEAR),
-                localCal.get(Calendar.MONTH),
-                localCal.get(Calendar.DATE));
+        gmtTime.set(localCal.get(Calendar.YEAR), localCal.get(Calendar.MONTH), localCal.get(Calendar.DATE));
         return gmtTime.getTimeInMillis();
     }
 
@@ -98,6 +96,7 @@ public class QamarTime {
         Calendar c = Calendar.getInstance();
         c.setTimeInMillis(millis);
         c.getTime();
+
         return new SimpleDateFormat("EEE, dd MMM yyyy", Locale.getDefault()).format(c.getTime());
     }
 }

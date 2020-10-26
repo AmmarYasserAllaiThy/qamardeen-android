@@ -10,7 +10,7 @@ import java.util.List;
 
 public class QamarDbAdapter {
 
-    private Context mContext = null;
+    private Context mContext;
     private QamarDbHelper mDbHelper = null;
     private SQLiteDatabase mDb = null;
 
@@ -116,18 +116,18 @@ public class QamarDbAdapter {
      * @return Cursor of the results
      */
     public Cursor getSadaqahEntries(long max, long min) {
-        if (mDbHelper == null) {
-            open();
-        }
-        if (mDb == null) {
-            return null;
-        }
-        Cursor cursor = mDb.query(CharityTable.TABLE_NAME,
-                null, CharityTable.TIME + " > " + min + " AND " +
-                        CharityTable.TIME + " <= " + max,
-                null, null, null, CharityTable.TIME + " DESC, " +
-                        CharityTable.SADAQAH_TYPE + " ASC");
-        return cursor;
+        if (mDbHelper == null) open();
+
+        if (mDb == null) return null;
+
+        return mDb.query(
+                CharityTable.TABLE_NAME,
+                null,
+                CharityTable.TIME + " > " + min + " AND " + CharityTable.TIME + " <= " + max,
+                null,
+                null,
+                null,
+                CharityTable.TIME + " DESC, " + CharityTable.SADAQAH_TYPE + " ASC");
     }
 
     /**
@@ -138,20 +138,19 @@ public class QamarDbAdapter {
      * @return true if succeeded or false otherwise
      */
     public boolean writeSadaqahEntries(long time, List<Integer> types) {
-        if (mDbHelper == null) {
-            open();
-        }
-        if (mDb == null) {
-            return false;
-        }
+        if (mDbHelper == null) open();
+
+        if (mDb == null) return false;
 
         // start a transaction
         mDb.beginTransaction();
         // remove old sadaqah entries for that day
-        mDb.delete(CharityTable.TABLE_NAME,
-                CharityTable.TIME + "= ?", new String[]{"" + time});
+        mDb.delete(
+                CharityTable.TABLE_NAME,
+                CharityTable.TIME + "= ?",
+                new String[]{"" + time});
 
-        if (types != null) {
+        if (types != null)
             // add all the values
             for (Integer type : types) {
                 ContentValues values = new ContentValues();
@@ -159,7 +158,6 @@ public class QamarDbAdapter {
                 values.put(CharityTable.SADAQAH_TYPE, type);
                 mDb.insert(CharityTable.TABLE_NAME, null, values);
             }
-        }
 
         // commit the transaction
         mDb.setTransactionSuccessful();
@@ -176,17 +174,18 @@ public class QamarDbAdapter {
      * @return the cursor of the results
      */
     public Cursor getQuranEntries(long max, long min) {
-        if (mDbHelper == null) {
-            open();
-        }
-        if (mDb == null) {
-            return null;
-        }
-        Cursor cursor = mDb.query(QuranTable.TABLE_NAME,
-                null, QuranTable.TIME + " > " + min + " AND " +
-                        QuranTable.TIME + " <= " + max,
-                null, null, null, QuranTable.TIME + " DESC");
-        return cursor;
+        if (mDbHelper == null) open();
+
+        if (mDb == null) return null;
+
+        return mDb.query(
+                QuranTable.TABLE_NAME,
+                null,
+                QuranTable.TIME + " > " + min + " AND " + QuranTable.TIME + " <= " + max,
+                null,
+                null,
+                null,
+                QuranTable.TIME + " DESC");
     }
 
     /**
@@ -196,17 +195,18 @@ public class QamarDbAdapter {
      * @return the first entry before the minimum date
      */
     public Cursor getEarlierQuranEntry(long min) {
-        if (mDbHelper == null) {
-            open();
-        }
-        if (mDb == null) {
-            return null;
-        }
-        Cursor cursor = mDb.query(QuranTable.TABLE_NAME,
-                null, QuranTable.TIME + " < " + min + " AND " +
-                        QuranTable.IS_EXTRA + " = 0",
-                null, null, null, QuranTable.TIME + " DESC limit 1");
-        return cursor;
+        if (mDbHelper == null) open();
+
+        if (mDb == null) return null;
+
+        return mDb.query(
+                QuranTable.TABLE_NAME,
+                null,
+                QuranTable.TIME + " < " + min + " AND " + QuranTable.IS_EXTRA + " = 0",
+                null,
+                null,
+                null,
+                QuranTable.TIME + " DESC limit 1");
     }
 
     /**
@@ -218,14 +218,10 @@ public class QamarDbAdapter {
      * @param affectedData the data for the row that got affected if applicable
      * @return true if succeeded or false otherwise
      */
-    public boolean writeQuranEntry(long changedTime, QuranData data,
-                                   Long affectedTime, QuranData affectedData) {
-        if (mDbHelper == null) {
-            open();
-        }
-        if (mDb == null) {
-            return false;
-        }
+    public boolean writeQuranEntry(long changedTime, QuranData data, Long affectedTime, QuranData affectedData) {
+        if (mDbHelper == null) open();
+
+        if (mDb == null) return false;
 
         // start a transaction
         mDb.beginTransaction();
@@ -234,7 +230,8 @@ public class QamarDbAdapter {
          * the current table definition, no conflict would occur. */
 
         // delete the entry
-        mDb.delete(QuranTable.TABLE_NAME,
+        mDb.delete(
+                QuranTable.TABLE_NAME,
                 QuranTable.TIME + "= ? AND " + QuranTable.IS_EXTRA + " = ?",
                 new String[]{"" + changedTime, "0"});
 
@@ -247,13 +244,16 @@ public class QamarDbAdapter {
             values.put(QuranTable.END_AYAH, data.getEndAyah());
             values.put(QuranTable.END_SURA, data.getEndSura());
             values.put(QuranTable.IS_EXTRA, 0);
+
             mDb.insert(QuranTable.TABLE_NAME, null, values);
         }
 
         if (affectedTime != null && affectedData != null) {
             // remove the old entry
-            mDb.delete(QuranTable.TABLE_NAME,
-                    QuranTable.TIME + "= ?", new String[]{"" + affectedTime});
+            mDb.delete(
+                    QuranTable.TABLE_NAME,
+                    QuranTable.TIME + "= ?",
+                    new String[]{"" + affectedTime});
 
             // add new entry
             ContentValues values = new ContentValues();
@@ -263,6 +263,7 @@ public class QamarDbAdapter {
             values.put(QuranTable.END_AYAH, affectedData.getEndAyah());
             values.put(QuranTable.END_SURA, affectedData.getEndSura());
             values.put(QuranTable.IS_EXTRA, 0);
+
             mDb.insert(QuranTable.TABLE_NAME, null, values);
         }
 
@@ -281,22 +282,20 @@ public class QamarDbAdapter {
      * @return true if succeeded or false otherwise
      */
     public boolean writeExtraQuranEntries(long when, List<QuranData> suras) {
-        if (mDbHelper == null) {
-            open();
-        }
-        if (mDb == null) {
-            return false;
-        }
+        if (mDbHelper == null) open();
+
+        if (mDb == null) return false;
 
         // start a transaction
         mDb.beginTransaction();
 
         // delete the old entries for this day
-        mDb.delete(QuranTable.TABLE_NAME,
+        mDb.delete(
+                QuranTable.TABLE_NAME,
                 QuranTable.TIME + "= ? AND " + QuranTable.IS_EXTRA + " = ?",
                 new String[]{"" + when, "1"});
 
-        if (suras != null) {
+        if (suras != null)
             for (QuranData data : suras) {
                 ContentValues values = new ContentValues();
                 values.put(QuranTable.TIME, when);
@@ -305,9 +304,9 @@ public class QamarDbAdapter {
                 values.put(QuranTable.END_AYAH, data.getEndAyah());
                 values.put(QuranTable.END_SURA, data.getEndSura());
                 values.put(QuranTable.IS_EXTRA, 1);
+
                 mDb.insert(QuranTable.TABLE_NAME, null, values);
             }
-        }
 
         // commit the transaction
         mDb.setTransactionSuccessful();
@@ -324,17 +323,18 @@ public class QamarDbAdapter {
      * @return Cursor of the results
      */
     public Cursor getFastingEntries(long max, long min) {
-        if (mDbHelper == null) {
-            open();
-        }
-        if (mDb == null) {
-            return null;
-        }
-        Cursor cursor = mDb.query(FastingTable.TABLE_NAME,
-                null, FastingTable.TIME + " > " + min + " AND " +
-                        FastingTable.TIME + " <= " + max,
-                null, null, null, FastingTable.TIME + " DESC");
-        return cursor;
+        if (mDbHelper == null) open();
+
+        if (mDb == null) return null;
+
+        return mDb.query(
+                FastingTable.TABLE_NAME,
+                null,
+                FastingTable.TIME + " > " + min + " AND " + FastingTable.TIME + " <= " + max,
+                null,
+                null,
+                null,
+                FastingTable.TIME + " DESC");
     }
 
     /**
@@ -345,16 +345,14 @@ public class QamarDbAdapter {
      * @return true if succeeded or false otherwise
      */
     public boolean writeFastingEntry(long time, Integer type) {
-        if (mDbHelper == null) {
-            open();
-        }
-        if (mDb == null) {
-            return false;
-        }
+        if (mDbHelper == null) open();
+
+        if (mDb == null) return false;
 
         ContentValues values = new ContentValues();
         values.put(FastingTable.TIME, time);
         values.put(FastingTable.FASTING_TYPE, type);
+
         long result = mDb.replace(FastingTable.TABLE_NAME, null, values);
         return result != -1;
     }

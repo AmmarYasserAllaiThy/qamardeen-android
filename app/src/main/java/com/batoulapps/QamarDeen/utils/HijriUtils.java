@@ -13,8 +13,7 @@ public class HijriUtils {
     private static final long MILLIS_YEAR_1 = -42521587200000L;
 
     // 19 years are 354 days, 11 leap years of 355 days
-    private static final long MILLIS_PER_CYCLE =
-            ((19L * 354L + 11L * 355L) * MILLIS_PER_DAY);
+    private static final long MILLIS_PER_CYCLE = ((19L * 354L + 11L * 355L) * MILLIS_PER_DAY);
 
     // length of the cycle
     private static final int CYCLE = 30;
@@ -42,8 +41,7 @@ public class HijriUtils {
      * @return the hijri date
      */
     public static HijriDate getHijriDate(Calendar cal) {
-        return getHijriDate(cal.get(Calendar.MONTH) + 1,
-                cal.get(Calendar.DATE), cal.get(Calendar.YEAR));
+        return getHijriDate(cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DATE), cal.get(Calendar.YEAR));
     }
 
     /**
@@ -79,32 +77,29 @@ public class HijriUtils {
         long cycleRemainder = millisIslamic % MILLIS_PER_CYCLE;
 
         int year = (int) ((cycles * CYCLE) + 1L);
-        long yearMillis = isHijriLeapYear(year) ?
-                MILLIS_PER_LONG_YEAR : MILLIS_PER_SHORT_YEAR;
+        long yearMillis = isHijriLeapYear(year) ? MILLIS_PER_LONG_YEAR : MILLIS_PER_SHORT_YEAR;
+
         while (cycleRemainder >= yearMillis) {
             cycleRemainder -= yearMillis;
-            yearMillis = isHijriLeapYear(++year) ?
-                    MILLIS_PER_LONG_YEAR : MILLIS_PER_SHORT_YEAR;
+            yearMillis = isHijriLeapYear(++year) ? MILLIS_PER_LONG_YEAR : MILLIS_PER_SHORT_YEAR;
         }
         return year;
     }
 
     private static int getHijriMonth(long timestamp, int hYear) {
-        int doyZeroBased =
-                (int) ((timestamp - calculateFirstDayOfYearMillis(hYear)) /
-                        MILLIS_PER_DAY);
-        if (doyZeroBased == 354) {
-            return 12;
-        }
+        int doyZeroBased = (int) ((timestamp - calculateFirstDayOfYearMillis(hYear)) / MILLIS_PER_DAY);
+
+        if (doyZeroBased == 354) return 12;
+
         return ((doyZeroBased * 2) / MONTH_PAIR_LENGTH) + 1;
     }
 
     private static int getHijriDay(long timestamp, int hYear) {
         long yearStart = calculateFirstDayOfYearMillis(hYear);
         int dayOfYear = (int) ((timestamp - yearStart) / MILLIS_PER_DAY);
-        if (dayOfYear == 354) {
-            return 30;
-        }
+
+        if (dayOfYear == 354) return 30;
+
         return (dayOfYear % MONTH_PAIR_LENGTH) % LONG_MONTH_LENGTH + 1;
     }
 
@@ -114,10 +109,8 @@ public class HijriUtils {
         long millis = MILLIS_YEAR_1 + cycle * MILLIS_PER_CYCLE;
         int cycleRemainder = (year % CYCLE) + 1;
 
-        for (int i = 1; i < cycleRemainder; i++) {
-            millis += (isHijriLeapYear(i) ? MILLIS_PER_LONG_YEAR :
-                    MILLIS_PER_SHORT_YEAR);
-        }
+        for (int i = 1; i < cycleRemainder; i++)
+            millis += (isHijriLeapYear(i) ? MILLIS_PER_LONG_YEAR : MILLIS_PER_SHORT_YEAR);
 
         return millis;
     }

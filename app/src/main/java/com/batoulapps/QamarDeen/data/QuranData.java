@@ -55,19 +55,15 @@ public class QuranData {
      * @return the number of ayahs read
      */
     public int getAyahCount() {
-        if (mStartSura > mEndSura) {
-            return 0;
-        } else if ((mStartSura == mEndSura) && (mStartAyah > mEndAyah)) {
-            return 0;
-        } else if (mStartSura == mEndSura) {
-            return mEndAyah - mStartAyah;
-        }
+        if (mStartSura > mEndSura) return 0;
+        else if ((mStartSura == mEndSura) && (mStartAyah > mEndAyah)) return 0;
+        else if (mStartSura == mEndSura) return mEndAyah - mStartAyah;
 
-        int ayahs = QamarConstants.SURA_NUM_AYAHS[mStartSura - 1];
-        ayahs = ayahs - mStartAyah;
-        for (int i = mStartSura + 1; i < mEndSura; i++) {
+        int ayahs = QamarConstants.SURA_NUM_AYAHS[mStartSura - 1] - mStartAyah;
+
+        for (int i = mStartSura + 1; i < mEndSura; i++)
             ayahs += QamarConstants.SURA_NUM_AYAHS[i - 1];
-        }
+
         ayahs += mEndAyah;
         return ayahs;
     }

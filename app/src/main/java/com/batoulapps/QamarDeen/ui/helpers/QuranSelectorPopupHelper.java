@@ -20,7 +20,7 @@ public class QuranSelectorPopupHelper {
 
     private PopupWindow mPopupWindow = null;
     private View mPopupWindowView = null;
-    private Context mContext = null;
+    private Context mContext;
     private int mCurrentRow = -1;
     private ListView mSuraList = null;
     private ListView mAyahList = null;
@@ -33,17 +33,17 @@ public class QuranSelectorPopupHelper {
     }
 
     public void showPopup(OnQuranSelectionListener listener,
-                          View anchorView, int row,
-                          int selectedSura, int selectedAyah) {
+                          View anchorView,
+                          int row,
+                          int selectedSura,
+                          int selectedAyah) {
+
         if (mPopupWindow == null || mPopupWindowView == null) {
-            LayoutInflater inflater = (LayoutInflater) mContext
-                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            mPopupWindowView = inflater.inflate(
-                    R.layout.quran_selector_popup, null);
-            mPopupWindow = new PopupWindow(mPopupWindowView,
-                    LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-            Drawable drawable = mContext.getResources()
-                    .getDrawable(R.color.popup_background);
+
+            LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            mPopupWindowView = inflater.inflate(R.layout.quran_selector_popup, null);
+            mPopupWindow = new PopupWindow(mPopupWindowView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+            Drawable drawable = mContext.getResources().getDrawable(R.color.popup_background);
             mPopupWindow.setBackgroundDrawable(drawable);
 
             View button = mPopupWindowView.findViewById(R.id.cancel_button);
@@ -58,23 +58,17 @@ public class QuranSelectorPopupHelper {
 
         mCurrentRow = row;
         mQuranSelectionListener = listener;
-        if (selectedSura < 1) {
-            selectedSura = 1;
-        }
-        if (selectedAyah < 1) {
-            selectedAyah = 1;
-        }
+        if (selectedSura < 1) selectedSura = 1;
+        if (selectedAyah < 1) selectedAyah = 1;
 
-        mSuraList = (ListView) mPopupWindowView
-                .findViewById(R.id.sura_list);
+        mSuraList = mPopupWindowView.findViewById(R.id.sura_list);
         mSuraList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         mSuraAdapter = new SuraAdapter(mContext);
         mSuraAdapter.setSelectedRow(null, selectedSura - 1);
         mSuraList.setAdapter(mSuraAdapter);
         mSuraList.setSelectionFromTop(selectedSura - 1, 0);
 
-        mAyahList = (ListView) mPopupWindowView
-                .findViewById(R.id.ayah_list);
+        mAyahList = mPopupWindowView.findViewById(R.id.ayah_list);
         mAyahAdapter = new NumericAdapter(mContext);
         mAyahList.setAdapter(mAyahAdapter);
         updateAyahsForSuraPosition(selectedSura - 1, selectedAyah - 1);
@@ -90,9 +84,9 @@ public class QuranSelectorPopupHelper {
 
     private void updateAyahsForSuraPosition(int position, int ayahPosition) {
         int count = QamarConstants.SURA_NUM_AYAHS[position];
-        if (ayahPosition >= count) {
-            ayahPosition = 0;
-        }
+
+        if (ayahPosition >= count) ayahPosition = 0;
+
         mAyahAdapter.setCount(count);
         mAyahAdapter.setSelectedRow(null, ayahPosition);
         mAyahAdapter.notifyDataSetChanged();
@@ -101,7 +95,7 @@ public class QuranSelectorPopupHelper {
 
     private abstract class StringAdapter extends BaseAdapter {
         protected int mSelectedRow = -1;
-        protected LayoutInflater mInflater = null;
+        protected LayoutInflater mInflater;
 
         public StringAdapter(Context context) {
             mInflater = LayoutInflater.from(context);
@@ -121,9 +115,8 @@ public class QuranSelectorPopupHelper {
 
                 if (previousRow >= start && previousRow <= end) {
                     View view = listview.getChildAt(previousRow - start);
-                    if (view != null) {
-                        getView(previousRow, view, listview);
-                    }
+
+                    if (view != null) getView(previousRow, view, listview);
                 }
             }
         }
@@ -134,24 +127,21 @@ public class QuranSelectorPopupHelper {
         }
 
         @Override
-        public View getView(final int position,
-                            View convertView, ViewGroup parent) {
-            if (convertView == null) {
-                convertView = mInflater.inflate(R.layout.sura_popup_row, null);
-            }
-            ((TextView) convertView).setText(getItem(position) + "");
+        public View getView(final int position, View convertView, ViewGroup parent) {
+            if (convertView == null) convertView = mInflater.inflate(R.layout.sura_popup_row, null);
 
+            ((TextView) convertView).setText(getItem(position).toString());
             int color = Color.TRANSPARENT;
-            if (mSelectedRow == position) {
-                color = 0xaaff0000;
-            }
+
+            if (mSelectedRow == position) color = 0xaaff0000;
+
             convertView.setBackgroundColor(color);
             return convertView;
         }
     }
 
     private class SuraAdapter extends StringAdapter {
-        private String[] mSuras = null;
+        private String[] mSuras;
 
         public SuraAdapter(Context context) {
             super(context);
@@ -169,18 +159,15 @@ public class QuranSelectorPopupHelper {
         }
 
         @Override
-        public View getView(final int position,
-                            View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, ViewGroup parent) {
             View v = super.getView(position, convertView, parent);
-            v.setOnClickListener(new OnClickListener() {
 
-                @Override
-                public void onClick(View v) {
-                    v.setBackgroundColor(0xaaff0000);
-                    setSelectedRow(mSuraList, position);
-                    updateAyahsForSuraPosition(position);
-                }
+            v.setOnClickListener(v1 -> {
+                v1.setBackgroundColor(0xaaff0000);
+                setSelectedRow(mSuraList, position);
+                updateAyahsForSuraPosition(position);
             });
+
             return v;
         }
     }
@@ -207,16 +194,12 @@ public class QuranSelectorPopupHelper {
         }
 
         @Override
-        public View getView(final int position,
-                            View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, ViewGroup parent) {
             View v = super.getView(position, convertView, parent);
 
-            v.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    v.setBackgroundColor(0xaaff0000);
-                    setSelectedRow(mAyahList, position);
-                }
+            v.setOnClickListener(v1 -> {
+                v1.setBackgroundColor(0xaaff0000);
+                setSelectedRow(mAyahList, position);
             });
 
             return v;
@@ -228,45 +211,37 @@ public class QuranSelectorPopupHelper {
      * using this helper class
      */
     public interface OnQuranSelectionListener {
-        public void onSuraAyahSelected(int row, int sura, int ayah);
+        void onSuraAyahSelected(int row, int sura, int ayah);
 
-        public void onNoneSelected(int row);
+        void onNoneSelected(int row);
     }
 
-    ;
+    protected OnClickListener mButtonClickListener = v -> {
+        // just dismiss the popup
+        if (v.getId() == R.id.cancel_button) dismissPopup();
+        else if (v.getId() == R.id.none_button) {
+            if (mQuranSelectionListener != null)
+                mQuranSelectionListener.onNoneSelected(mCurrentRow);
 
-    protected OnClickListener mButtonClickListener = new OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            if (v.getId() == R.id.cancel_button) {
-                // just dismiss the popup
-                dismissPopup();
-            } else if (v.getId() == R.id.none_button) {
-                if (mQuranSelectionListener != null) {
-                    mQuranSelectionListener.onNoneSelected(mCurrentRow);
-                }
-                dismissPopup();
-            } else if (v.getId() == R.id.done_button) {
-                if (mQuranSelectionListener != null) {
-                    mQuranSelectionListener.onSuraAyahSelected(mCurrentRow,
-                            mSuraAdapter.getSelectedRow() + 1,
-                            mAyahAdapter.getSelectedRow() + 1);
-                }
-                dismissPopup();
-            }
+            dismissPopup();
+
+        } else if (v.getId() == R.id.done_button) {
+            if (mQuranSelectionListener != null)
+                mQuranSelectionListener.onSuraAyahSelected(
+                        mCurrentRow,
+                        mSuraAdapter.getSelectedRow() + 1,
+                        mAyahAdapter.getSelectedRow() + 1);
+
+            dismissPopup();
         }
     };
 
     public boolean isShowing() {
-        if (mPopupWindow != null) {
-            return mPopupWindow.isShowing();
-        }
+        if (mPopupWindow != null) return mPopupWindow.isShowing();
         return false;
     }
 
     public void dismissPopup() {
-        if (mPopupWindow != null) {
-            mPopupWindow.dismiss();
-        }
+        if (mPopupWindow != null) mPopupWindow.dismiss();
     }
 }

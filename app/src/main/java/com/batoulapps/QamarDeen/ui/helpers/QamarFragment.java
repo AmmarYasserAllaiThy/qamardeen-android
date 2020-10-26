@@ -28,8 +28,7 @@ import com.batoulapps.QamarDeen.utils.QamarTime;
 import java.util.Calendar;
 import java.util.List;
 
-public abstract class QamarFragment extends Fragment
-        implements OnQamarSelectionListener {
+public abstract class QamarFragment extends Fragment implements OnQamarSelectionListener {
 
     public static final int REFRESH_MSG = 1;
 
@@ -46,9 +45,7 @@ public abstract class QamarFragment extends Fragment
     protected Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            if (msg.what == REFRESH_MSG) {
-                refreshData();
-            }
+            if (msg.what == REFRESH_MSG) refreshData();
         }
     };
 
@@ -58,11 +55,10 @@ public abstract class QamarFragment extends Fragment
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Activity activity = getActivity();
         View view = inflater.inflate(getLayout(), container, false);
-        mListView = (PinnedHeaderListView) view.findViewById(R.id.list);
+        mListView = view.findViewById(R.id.list);
         mListView.setDividerHeight(0);
         mListAdapter = createAdapter(activity);
 
@@ -80,13 +76,11 @@ public abstract class QamarFragment extends Fragment
         View footer = inflater.inflate(R.layout.list_footer, null, false);
         mLoadMoreButton = footer.findViewById(R.id.load_more_button);
         mLoadMoreButton.setOnClickListener(v -> {
-//            if (mListAdapter != null) mListAdapter.addDays(6 * 30);
             // fixme if encounters errors
             if (mListAdapter != null) mListAdapter.addDays(30 * 6);
         });
 
-        AbsListView.LayoutParams ll = new AbsListView.LayoutParams(
-                LayoutParams.MATCH_PARENT, footerHeight);
+        AbsListView.LayoutParams ll = new AbsListView.LayoutParams(LayoutParams.MATCH_PARENT, footerHeight);
         footer.setLayoutParams(ll);
         mListView.addFooterView(footer);
 
@@ -94,8 +88,7 @@ public abstract class QamarFragment extends Fragment
         mListView.setAdapter(mListAdapter);
 
         // set pinned header
-        mListView.setPinnedHeaderView(
-                inflater.inflate(getHeaderLayout(), mListView, false));
+        mListView.setPinnedHeaderView(inflater.inflate(getHeaderLayout(), mListView, false));
         mListView.setOnScrollListener(mListAdapter);
         mListView.setDividerHeight(0);
 
@@ -107,9 +100,7 @@ public abstract class QamarFragment extends Fragment
     @Override
     public void onPause() {
         mHandler.removeMessages(REFRESH_MSG);
-        if (mPopupHelper != null) {
-            mPopupHelper.dismissPopup();
-        }
+        if (mPopupHelper != null) mPopupHelper.dismissPopup();
         super.onPause();
     }
 
@@ -119,29 +110,27 @@ public abstract class QamarFragment extends Fragment
 
         long midnight = QamarTime.getMidnightMillis();
         long now = Calendar.getInstance().getTimeInMillis();
-
         long delay = midnight - now;
+
         mHandler.sendEmptyMessageDelayed(REFRESH_MSG, delay);
 
-        if (!mJustInitialized) {
-            refreshData();
-        }
+        if (!mJustInitialized) refreshData();
+
         mJustInitialized = false;
     }
 
     private int getActionBarHeight(AppCompatActivity activity, Resources resources) {
         int abHeight = 0;
         final ActionBar ab = activity.getSupportActionBar();
-        if (ab != null) {
-            abHeight = ab.getHeight();
-        }
+
+        if (ab != null) abHeight = ab.getHeight();
 
         if (abHeight == 0) {
             final TypedValue tv = new TypedValue();
-            if (activity.getTheme()
-                    .resolveAttribute(android.support.v7.appcompat.R.attr.actionBarSize, tv, true)) {
+
+            if (activity.getTheme().resolveAttribute(
+                    android.support.v7.appcompat.R.attr.actionBarSize, tv, true))
                 abHeight = TypedValue.complexToDimensionPixelSize(tv.data, resources.getDisplayMetrics());
-            }
         }
         return abHeight;
     }
@@ -174,7 +163,6 @@ public abstract class QamarFragment extends Fragment
                 mLoadingTask = null;
             }
             mListAdapter.requeryData();
-            return;
         }
     }
 
@@ -185,14 +173,10 @@ public abstract class QamarFragment extends Fragment
      * @param minDate the min date to get data for.  may be null.
      */
     protected void requestRangeData(Long maxDate, Long minDate) {
-        if (mLoadingTask != null) {
-            mLoadingTask.cancel(true);
-        }
+        if (mLoadingTask != null) mLoadingTask.cancel(true);
 
         Calendar calendar = QamarTime.getTodayCalendar();
-        if (maxDate != null) {
-            calendar.setTimeInMillis(maxDate);
-        }
+        if (maxDate != null) calendar.setTimeInMillis(maxDate);
 
         // need ts of 12:00:00 on the max day in gmt
         maxDate = QamarTime.getGMTTimeFromLocal(calendar);
@@ -201,9 +185,8 @@ public abstract class QamarFragment extends Fragment
             // if no min date, backup 30 days
             calendar.add(Calendar.DATE, -1 * 30);
             minDate = calendar.getTimeInMillis();
-        } else {
-            calendar.setTimeInMillis(minDate);
-        }
+
+        } else calendar.setTimeInMillis(minDate);
 
         // need ts 12:00:00 on the min day in gmt
         minDate = QamarTime.getGMTTimeFromLocal(calendar);
