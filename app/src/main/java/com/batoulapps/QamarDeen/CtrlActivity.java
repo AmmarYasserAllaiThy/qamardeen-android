@@ -215,8 +215,17 @@ public class CtrlActivity extends AppCompatActivity {
         et.setEnabled(false);
         et.setFocusable(false);
         et.setBackgroundColor(TRANSPARENT_COLOR);
+        getTvOf(et).setVisibility(View.GONE);
     }
 
+    public TextView getTvOf(EditText et) {
+        return et == fajr_prayed_et ? fajr_missed_tv :
+                et == dhuhr_prayed_et ? dhuhr_missed_tv :
+                        et == asr_prayed_et ? asr_missed_tv :
+                                et == maghrib_prayed_et ? maghrib_missed_tv :
+                                        et == isha_prayed_et ? isha_missed_tv :
+                                                null;
+    }
 
     public void save(View view) {
         final int fajrMissedNo = getIntValueOf(fajr_missed_tv);
